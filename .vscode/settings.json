@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "format": "c",
+        "sstream": "c",
+        "renderhandler.h": "c"
+    }
+}

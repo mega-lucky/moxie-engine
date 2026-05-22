@@ -15,8 +15,8 @@ static void get_shader_uniforms(ShaderProgram *shader) {
 
     size_t block_size = n_uniforms * (sizeof(Uniform) + max_length);
 
-    MemoryArena *arena = CreateMemoryArena(block_size);
-    shader->Uniforms = PushToMemoryArena(arena, n_uniforms * sizeof(Uniform));
+    shader->Uniforms = AllocMem(block_size);
+    char *ptr = (char*)(shader->Uniforms) + n_uniforms * sizeof(Uniform);
     
     for (int i = 0; i < n_uniforms; i++) {
         GLsizei length;
@@ -26,10 +26,11 @@ static void get_shader_uniforms(ShaderProgram *shader) {
             shader->ID, i,
             max_length, &length,
             &size, &type,
-            arena->data + arena->size
+            ptr
         ); GL_CHECK()
 
-        char *name = PushToMemoryArena(arena, length+1);
+        const char *name = ptr;
+        ptr += length + 1;
         shader->Uniforms[i].Name = name;
         shader->Uniforms[i].Location = glGetUniformLocation(shader->ID, name); GL_CHECK()
     }
@@ -95,4 +96,8 @@ GLint GetUniformLocation(ShaderProgram *shader, const char *name) {
         }
     }
     return -1;
+}
+void DestroyShader(ShaderProgram *shader) {
+    FreeMem(&shader->Uniforms);
+    FreeMem(&shader);
 }

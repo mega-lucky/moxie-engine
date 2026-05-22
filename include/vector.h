@@ -3,10 +3,7 @@
 
 #include <stddef.h>
 
-typedef struct vector {
-    void *data;
-    size_t len, capacity, size;
-} vector;
+typedef struct vector vector;
 
 vector *vector_create(size_t size);
 void *vector_get(const vector *vector, size_t index);
@@ -17,11 +14,12 @@ void vector_insert(vector *vector, size_t index, void *val);
 void vector_fill(vector *vector, void *value);
 void vector_remove(vector *vector, size_t index);
 void vector_remove_unordered(vector *vector, size_t index);
-void vector_pop(vector *vector);
+void *vector_pop(vector *vector);
 void vector_sort(vector *vector, int(*comp)(const void *a, const void *b));
 void vector_destroy(vector *vector);
 void vector_swap(vector *vector, size_t i, size_t j);
 void vector_reverse(vector *vector);
+size_t vector_len(vector *vector);
 
 #define DEFINE_VECTOR(T, name) \
 typedef struct name { \
@@ -47,9 +45,7 @@ static inline void name##_remove(name vec, size_t index) { \
     vector_remove(vec.base, index); \
 } \
 static inline T name##_pop(name vec) { \
-    T* last = vector_get(vec.base, vec.base->len-1); \
-    vector_pop(vec.base); \
-    return *last; \
+    return *(T*)vector_pop(vec.base); \
 } \
 static inline void name##_remove_unordered(name vec, size_t index) { \
     vector_remove_unordered(vec.base, index); \
@@ -74,7 +70,7 @@ static inline void name##_sort(name vec, int (*cmp)(const void *a, const void *b
     vector_sort(vec.base, cmp); \
 } \
 static inline size_t name##_len(name vec) { \
-    return vec.base->len; \
+    return vector_len(vec.base); \
 }
 
 #endif

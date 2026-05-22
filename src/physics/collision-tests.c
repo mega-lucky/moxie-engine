@@ -346,11 +346,8 @@ CollisionManifold SweptSATTest(EntityID first, EntityID second) {
     RigidBody *rigidbody_b = GetRigidBody(second);
 
     CollisionManifold null_result = {
-        .normal = Vec3Zero,
         .time = -INFINITY,
         .penetration = INFINITY,
-        .a = first,
-        .b = second,
         .collided = false
     };
 
@@ -370,7 +367,10 @@ CollisionManifold SweptSATTest(EntityID first, EntityID second) {
     Vec3 delta_pos = Vec3MulF(relative_velo, GetDeltaTime());
 
     CollisionManifold result_a = null_result;
+    result_a.a = first, result_a.b = second;
+    
     CollisionManifold result_b = null_result;
+    result_b.a = second, result_b.b = first;
         
     if (FindSeparatingAxis(
         collision_a, *transform_a,
@@ -387,6 +387,7 @@ CollisionManifold SweptSATTest(EntityID first, EntityID second) {
         return null_result;
     }
 
+
     CollisionManifold result;
     if (!rigidbody_b || rigidbody_b->Static) {
         result = result_b.collided ? result_b : result_a;
@@ -396,7 +397,7 @@ CollisionManifold SweptSATTest(EntityID first, EntityID second) {
         float dot_a = Vec3Dot(result_a.normal, relative_velo);
         float dot_b = Vec3Dot(result_b.normal, relative_velo);
 
-        result = dot_b > dot_a ? result_b : result_a;
+        result = fabsf(dot_b) > fabsf(dot_a) ? result_b : result_a;
     }
     return result;
 }

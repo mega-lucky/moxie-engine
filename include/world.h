@@ -24,9 +24,10 @@ typedef uint64_t ComponentMask;
 DEFINE_VECTOR(EntityID, EntityList);
 
 typedef void (*SystemUpdate)(void *data);
-typedef void (*ComponentDestructor)(void *data);
+typedef void (*ComponentFunc)(void *data);
 
 typedef struct SystemDescription {
+    const char *Name;
     enum CyclePhase Phase;
     size_t DataSize;
     int Priority;
@@ -36,8 +37,8 @@ typedef struct SystemDescription {
 
 typedef struct ComponentDescription {
     size_t DataSize;
-    ComponentDestructor Destructor;
-    void *DefaultValue;
+    ComponentFunc Init;
+    ComponentFunc Del;
 } ComponentDescription;
 
 struct EntityQuery {

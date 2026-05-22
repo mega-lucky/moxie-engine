@@ -4,12 +4,18 @@
 #include "platform.h"
 #include "memory.h"
 
+typedef struct RenderSystemState {
+    const EntityQuery *renderables;
+    const EntityQuery *cameras;
+} RenderSystemState;
+
 static ComponentMask render_mask = 0;
+static bool render_system_init = false;
 
 static void window_resize(int width, int height) {
     glViewport(0, 0, width, height); GL_CHECK()
 }
-void RenderSystemInit(void *data) {
+static void RenderSystemInit(void *data) {
     RenderSystemState *state = data;
     
     state->renderables = QueryEntities(render_mask | TransformMask());
@@ -25,7 +31,7 @@ void RenderSystemInit(void *data) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     BindToWindowResize(window_resize);
 }
-void RenderSystemUpdate(void *data) {
+static void RenderSystemUpdate(void *data) {
     RenderSystemState *state = data;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -72,6 +78,7 @@ void RenderSystemUpdate(void *data) {
         }
     }
 
+    glFinish();
     SwapFrameBuffers();
 }
 
@@ -79,8 +86,19 @@ void RegisterRenderComponent() {
     if (render_mask != 0) { return; }
     render_mask = RegisterComponent((ComponentDescription){
         .DataSize = sizeof(MeshRender),
-        .DefaultValue = NULL,
-        .Destructor = NULL
+        .Init = NULL,
+        .Del = NULL
+    });
+}
+void RegisterRenderSystem() {
+    if (render_system_init) { return; }
+    RegisterSystem((SystemDescription){
+        .Name = "RENDER SYSTEM",
+        .Phase = CYCLE_PHASE_RENDER,
+        .Priority = 1000,
+        .DataSize = sizeof(struct RenderSystemState),
+        .Init = RenderSystemInit,
+        .Update = RenderSystemUpdate,
     });
 }
 ComponentMask MeshRenderMask() {

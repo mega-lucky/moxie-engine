@@ -44,8 +44,8 @@ void RegisterControls() {
     if (controls_mask != 0) { return; }
     controls_mask = RegisterSingleton((ComponentDescription){
         .DataSize = sizeof(ControlState),
-        .DefaultValue = NULL,
-        .Destructor = NULL
+        .Init = NULL,
+        .Del = NULL
     });
 }
 ControlState *GetControls() {

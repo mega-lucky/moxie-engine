@@ -125,8 +125,8 @@ void RegisterCollisionComponent() {
     if (collision_mask != 0) { return; }
     collision_mask = RegisterComponent((ComponentDescription){
         .DataSize = sizeof(Collision),
-        .DefaultValue = NULL,
-        .Destructor = collision_destrutor
+        .Init = NULL,
+        .Del = collision_destrutor
     });
 }
 ComponentMask CollisionMask() {

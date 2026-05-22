@@ -7,7 +7,7 @@ void *AllocMem(size_t size);
 void *CallocMem(size_t nblocks, size_t blocksize);
 void FreeMem(void *memory);
 int ReallocMem(void *memory, size_t size);
-void *DupMem(void *memory, size_t size);
+void *DupMem(const void *memory, size_t size);
 
 typedef struct MemoryArena {
     char *data;

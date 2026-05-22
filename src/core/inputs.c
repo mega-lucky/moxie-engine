@@ -75,8 +75,8 @@ void RegisterInputState() {
     if (input_state_mask != 0) { return; }
     input_state_mask = RegisterSingleton((ComponentDescription){
         .DataSize = sizeof(InputState),
-        .DefaultValue = NULL,
-        .Destructor = NULL
+        .Init = NULL,
+        .Del = NULL
     });
 }
 InputState *GetInputs() {

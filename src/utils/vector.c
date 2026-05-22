@@ -4,6 +4,11 @@
 #include <string.h>
 #include <assert.h>
 
+typedef struct vector {
+    void *data;
+    size_t len, capacity, size;
+} vector;
+
 vector *vector_create(size_t size) {
     vector *vec = AllocMem(sizeof(vector));
     
@@ -57,9 +62,10 @@ void vector_remove(vector *vector, size_t ind) {
     }
     vector->len --;
 }
-void vector_pop(vector *vector) {
+void *vector_pop(vector *vector) {
     assert(vector->len > 0);
     vector->len --;
+    return &((char*)vector->data)[vector->len * vector->size];
 }
 void vector_fill(vector *vector, void *value) {
     for (size_t i = 0; i < vector->len; i ++) {
@@ -98,4 +104,7 @@ void vector_destroy(vector *vector) {
 }
 void vector_sort(vector *vector, int (*cmp)(const void *a, const void *b)) {
     qsort(vector->data, vector->len, vector->size, cmp);
+}
+size_t vector_len(vector *vector) {
+    return vector->len;
 }

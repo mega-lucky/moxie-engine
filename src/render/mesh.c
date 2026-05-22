@@ -139,13 +139,20 @@ void DrawMeshInstanced(Mesh *mesh, unsigned int instances) {
     }
 }
 void DestroyMesh(Mesh *mesh) {
-    if (mesh->VertexData != NULL && mesh->VertexCount > 0) {
+    if (mesh->VertexData != NULL) {
         FreeMem(&mesh->VertexData);
     }
-    if (mesh->Indices != NULL && mesh->IndexCount > 0) {
+    if (mesh->Indices != NULL) {
         FreeMem(&mesh->Indices);
     }
     FreeMem(&mesh);
+}
+void DestroyMaterial(Material *material) {
+    FreeMem(&material);
+}
+void DestroyTexture(Texture *texture) {
+    FreeMem(&texture->data);
+    FreeMem(&texture);
 }
 AABB GetMeshAABB(Mesh *mesh) {
     AABB result = {

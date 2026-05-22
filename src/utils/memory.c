@@ -36,7 +36,7 @@ int ReallocMem(void *memory, size_t size) {
     *(void **)memory = newmemory;
     return 1;
 }
-void *DupMem(void *memory, size_t size) {
+void *DupMem(const void *memory, size_t size) {
     void *ptr = AllocMem(size);
     memcpy(ptr, memory, size);
     return ptr;

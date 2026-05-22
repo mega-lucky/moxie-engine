@@ -4,18 +4,16 @@
 #include <string.h>
 #include <stdlib.h>
 
-struct Component {
+typedef struct Component {
     size_t entities_count;
     EntityID *entities;
     char *data;
     ComponentDescription description;
-};
-typedef struct Component Component;
-struct System {
+} Component;
+typedef struct System {
     SystemDescription desc;
     void *data;
-};
-typedef struct System System;
+} System;
 
 #define AVAILABLE_IDS_BLOCKSIZE   sizeof(EntityID) * MAX_ENTITIES
 #define ENTITY_IDS_BLOCKSIZE      sizeof(EntityID) * MAX_ENTITIES
@@ -112,15 +110,19 @@ void TerminateWorld() {
     for (size_t i = 0; i < component_count; i ++) {
         Component *component = &components[i];
 
+        if (component->description.Del) {
+            for (size_t j = 0; j < component->entities_count; j ++) {
+                EntityID entity = component->entities[j];
+                component->description.Del(GetComponent(entity, 1 << i));
+            }
+        }
+
         if (component->entities != NULL) {
             FreeMem(&component->entities);
         }
         if (component->data != NULL) {
             FreeMem(&component->data);
         }
-        if (component->description.DefaultValue != NULL) {
-            FreeMem(&component->description.DefaultValue);
-        };
     }
     for (size_t i = 0; i < query_count; i ++) {
         EntityQuery *query = &queries[i];
@@ -136,6 +138,9 @@ void TerminateWorld() {
 
         if (system->data != NULL) {
             FreeMem(&system->data);
+        }
+        if (system->desc.Name != NULL) {
+            FreeMem(&system->desc.Name);
         }
     }
     DestroyMemoryArena(world_arena);
@@ -177,12 +182,19 @@ void DestroyEntity(EntityID entity) {
         if (!(back_mask & (1 << i))) { continue; }
 
         const Component *current_component = &components[i];
+
+        void *data = GetComponent(entity, 1 << i);
+        ComponentFunc destructor = current_component->description.Del;
+        if (destructor && data) {
+            destructor(data);
+        }
+
         const size_t data_size = current_component->description.DataSize;
-        char *data = current_component->data;
+        char *component_data = current_component->data;
 
         memmove(
-            &data[new_index * data_size],
-            &data[old_index * data_size],
+            &component_data[new_index * data_size],
+            &component_data[old_index * data_size],
             data_size
         );
     }
@@ -238,12 +250,6 @@ EntityQuery *QueryEntities(ComponentMask mask) {
     return query;
 }
 ComponentMask RegisterComponent(ComponentDescription description) {
-    size_t data_size = description.DataSize;
-
-    if (description.DefaultValue != NULL) {
-        description.DefaultValue = DupMem(description.DefaultValue, data_size);
-    }
-
     Component new_component;
     new_component.description = description;
     new_component.entities_count = 0;
@@ -261,10 +267,12 @@ ComponentMask RegisterSingleton(ComponentDescription description) {
     new_component.description = description;
     new_component.entities_count = 0;
     new_component.entities = NULL;
-    
-    new_component.data = description.DefaultValue != NULL
-        ? DupMem(description.DefaultValue, description.DataSize)
-        : CallocMem(1, description.DataSize);
+
+    ComponentFunc init = description.Init;
+    new_component.data = CallocMem(1, description.DataSize);
+    if (init) {
+        init(new_component.data);
+    }
     
     const size_t component_index = component_count;
     components[component_count++] = new_component;
@@ -283,13 +291,13 @@ void EntityGiveComponents(EntityID entity, ComponentMask mask) {
         Component *component = &components[i];
         component->entities[component->entities_count++] = entity;
 
-        if (!component->description.DefaultValue) { continue; }
+        ComponentFunc init = component->description.Init;
+
+        if (!init) { continue; }
+        size_t start_byte = entity_indices[entity] * component->description.DataSize;
+        void *data = &component->data[start_byte];
         
-        memcpy(
-            &component->data[entity_indices[entity] * component->description.DataSize],
-            component->description.DefaultValue,
-            component->description.DataSize
-        );
+        init(data);
     }
     
     component_masks[entity_index] |= mask;
@@ -331,10 +339,13 @@ void *GetSingleton(ComponentMask mask) {
 }
 void RegisterSystem(SystemDescription desc) {
     void *data = desc.DataSize == 0 ? NULL : CallocMem(1, desc.DataSize);
-    systems[system_count ++] = (System){ .desc=desc, .data=data };
     if (desc.Init != NULL) {
         desc.Init(data);
     }
+    if (desc.Name != NULL) {
+        desc.Name = DupMem(desc.Name, strlen(desc.Name + 1));
+    }
+    systems[system_count ++] = (System){ .desc=desc, .data=data };
 
     systems_sorted = false;
 }

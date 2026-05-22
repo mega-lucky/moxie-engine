@@ -40,8 +40,8 @@ Mat4x4 GetProjectionMatrix(EntityID camera_id) {
 void RegisterCameraComponent() {
     camera_mask = RegisterComponent((ComponentDescription){
         .DataSize = sizeof(Camera),
-        .DefaultValue = NULL,
-        .Destructor = NULL,
+        .Init = NULL,
+        .Del = NULL,
     });
 }
 ComponentMask CameraMask() {

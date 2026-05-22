@@ -3,6 +3,27 @@
 #include <string.h>
 #include <assert.h>
 
+typedef size_t (*HashFn)(const void*, size_t);
+typedef int (*CompareFn)(const void*, const void*, size_t);
+typedef void *(*CopyKeyFn)(const void*, size_t);
+typedef void (*FreeKeyFn)(void *);
+
+typedef struct map_data {
+    void *key;
+    void *value;
+} map_data;
+
+typedef struct hash_map {
+    HashFn hash_fn;
+    CompareFn cmp_fn;
+    CopyKeyFn kcpy_fn;
+    FreeKeyFn kfree_fn;
+
+    size_t keysize, valuesize, capacity, count;
+
+    map_data *data;
+} hash_map;
+
 uint64_t DEFAULT_HASH(const void *key, size_t size) {
     const uint8_t *bytes = key;
     uint64_t hash = 1469598103934665603ULL;

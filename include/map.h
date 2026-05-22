@@ -4,26 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef size_t (*HashFn)(const void*, size_t);
-typedef int (*CompareFn)(const void*, const void*, size_t);
-typedef void *(*CopyKeyFn)(const void*, size_t);
-typedef void (*FreeKeyFn)(void *);
-
-typedef struct map_data {
-    void *key;
-    void *value;
-} map_data;
-
-typedef struct hash_map {
-    HashFn hash_fn;
-    CompareFn cmp_fn;
-    CopyKeyFn kcpy_fn;
-    FreeKeyFn kfree_fn;
-
-    size_t keysize, valuesize, capacity, count;
-
-    map_data *data;
-} hash_map;
+typedef struct hash_map hash_map;
 
 hash_map *new_hash_map(size_t keysize, size_t valsize, size_t capacity);
 void destroy_hash_map(hash_map *map);

@@ -166,6 +166,11 @@ int main() {
 
         GetRigidBody(floor_entity)->Static = true;
     }
+    Material *goat_material = CreateMaterial();
+    Texture *goat_texture = GenTextureFromFileName("assets/image/goat.jpg");
+    UploadTexture(goat_texture);
+    goat_material->Texture = goat_texture;
+    goat_material->Shader = default_material->Shader;
     {
         orb = NewEntity();
         EntityGiveComponents(orb, basepart);
@@ -178,22 +183,19 @@ int main() {
         MeshRender *mesh_render = GetMeshRender(orb);
         mesh_render->Mesh = cube_mesh;
         mesh_render->Colour = Vec4New(1.0f, 1.0f, 1.0f, 1.0f);
-        mesh_render->Material = CreateMaterial();
-        Texture *goat_texture = GenTextureFromFileName("assets/image/goat.jpg");
-        UploadTexture(goat_texture);
-        mesh_render->Material->Texture = goat_texture;
-        mesh_render->Material->Shader = default_material->Shader;
+        mesh_render->Material = goat_material;
 
         Collision *collision = GetCollision(orb);
         InitCollisionFromMesh(mesh_render->Mesh, collision);
 
-        GetRigidBody(orb)->Static = true;
+        RigidBody *rigidbody = GetRigidBody(orb);
+        rigidbody->Acceleration.y = -100.0f;
     }
 
     player_mask = RegisterSingleton((ComponentDescription){
         .DataSize = sizeof(Player),
-        .DefaultValue = NULL,
-        .Destructor = NULL
+        .Init = NULL,
+        .Del = NULL
     });
 
     Player *player = GetSingleton(player_mask);
@@ -202,6 +204,7 @@ int main() {
     player->camera_offset = Vec3New(2.0f, 1.0f, 0.0f);
 
     RegisterSystem((SystemDescription){
+        .Name = "Player System",
         .DataSize = 0,
         .Init = NULL,
         .Phase = CYCLE_PHASE_PRERENDER,
@@ -210,6 +213,13 @@ int main() {
     });
     
     StartGameLoop();
+
+    DestroyMesh(cube_mesh);
+    DestroyMesh(sphere_mesh);
+    DestroyShader(default_material->Shader);
+    DestroyMaterial(default_material);
+    DestroyMaterial(goat_material);
+    DestroyTexture(goat_texture);
     TerminateGame();
     return 0;
 }

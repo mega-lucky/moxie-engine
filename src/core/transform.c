@@ -81,12 +81,16 @@ Vec3 TransformPoint(Vec3 point, Transform transform) {
 
     return result;
 }
+static void transform_init(void *data) {
+    Transform *transform = data;
+    *transform = TransformIdentity;
+}
 void RegisterTransformComponent() {
     if (transform_mask != 0) { return; }
     transform_mask = RegisterComponent((ComponentDescription){
         .DataSize = sizeof(Transform),
-        .DefaultValue = &TransformIdentity,
-        .Destructor = NULL
+        .Init = transform_init,
+        .Del = NULL
     });
 }
 

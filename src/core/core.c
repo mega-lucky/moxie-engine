@@ -8,6 +8,11 @@
 
 bool game_initialised = false;
 
+void RenderSystemInit(void *state);
+void RenderSystemUpdate(void *state);
+void RegisterRenderSystem();
+void RegisterRenderComponent();
+
 int InitGame() {
     if (game_initialised) {
         return 0;
@@ -26,6 +31,7 @@ int InitGame() {
     RegisterControls();
     
     SystemDescription input_system = {
+        .Name = "INPUT SYSTEM",
         .Phase = CYCLE_PHASE_INPUT,
         .Priority = 1000,
         .DataSize = 0,
@@ -34,6 +40,7 @@ int InitGame() {
     };
     RegisterSystem(input_system);
     SystemDescription control_system = {
+        .Name = "CONTROL SYSTEM",
         .Phase = CYCLE_PHASE_INPUT,
         .Priority = 800,
         .DataSize = 0,
@@ -42,6 +49,7 @@ int InitGame() {
     };
     RegisterSystem(control_system);
     SystemDescription rigidbody_system = {
+        .Name = "RIGIDBODY SYSTEM",
         .Phase = CYCLE_PHASE_PHYSICS,
         .Priority = 1000,
         .DataSize = sizeof(RigidBodySystemState),
@@ -50,6 +58,7 @@ int InitGame() {
     };
     RegisterSystem(rigidbody_system);
     SystemDescription collision_system = {
+        .Name = "COLLISION SYSTEM",
         .Phase = CYCLE_PHASE_PHYSICS,
         .Priority = 10000,
         .DataSize = sizeof(CollisionSystemState),
@@ -57,14 +66,7 @@ int InitGame() {
         .Update = CollisionSystemUpdate
     };
     RegisterSystem(collision_system);
-    SystemDescription render_system = {
-        .Phase = CYCLE_PHASE_RENDER,
-        .Priority = 1000,
-        .DataSize = sizeof(struct RenderSystemState),
-        .Init = RenderSystemInit,
-        .Update = RenderSystemUpdate,
-    };
-    RegisterSystem(render_system);
+    RegisterRenderSystem();
 
     return 1;
 }

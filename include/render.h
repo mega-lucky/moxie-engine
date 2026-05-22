@@ -53,7 +53,7 @@ enum TextureType {
 };
 
 typedef struct Uniform {
-    char *Name;
+    const char *Name;
     int Location;
 } Uniform;
 
@@ -109,12 +109,6 @@ typedef struct MeshRender {
     Material *Material;
 } MeshRender;
 
-struct RenderSystemState {
-    const EntityQuery *renderables;
-    const EntityQuery *cameras;
-};
-typedef struct RenderSystemState RenderSystemState;
-
 struct GameObject;
 Mesh *CreateMesh();
 MeshVertex *CreateVertexBuffer(size_t vertex_count);
@@ -129,18 +123,18 @@ void DrawVAOInstanced(unsigned int vao, enum DrawType drawtype, unsigned int n, 
 void DrawMesh(Mesh *mesh);
 void DrawMeshInstanced(Mesh *mesh, unsigned int instances);
 void DestroyMesh(Mesh *mesh);
+void DestroyMaterial(Material *material);
+void DestroyShader(ShaderProgram *shader);
+void DestroyTexture(Texture *texture);
 ShaderProgram *CreateShader(const char *vert_src, const char *frag_src);
 int GetUniformLocation(ShaderProgram *shader, const char *name);
 AABB GetMeshAABB(Mesh *mesh);
 AABB TransformAABB(AABB aabb, Transform transform);
-void RenderSystemInit(void *state);
-void RenderSystemUpdate(void *state);
 Mesh *CubeMesh();
 Mesh *SphereMesh(float radius, size_t stacks, size_t sectors);
 Texture *GenTextureFromFileName(const char *filename);
 void UploadTexture(Texture *texture);
 
-void RegisterRenderComponent();
 ComponentMask MeshRenderMask();
 MeshRender *GetMeshRender(EntityID entity);
 

@@ -72,8 +72,8 @@ void RegisterRigidBodyComponent() {
     if (rigid_body_mask != 0) { return; }
     rigid_body_mask = RegisterComponent((ComponentDescription){
         .DataSize = sizeof(RigidBody),
-        .DefaultValue = NULL,
-        .Destructor = NULL
+        .Init = NULL,
+        .Del = NULL
     });
 }
 ComponentMask RigidBodyMask() {

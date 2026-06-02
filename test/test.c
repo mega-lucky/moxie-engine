@@ -60,7 +60,7 @@ void PlayerSystemUpdate(void *data) {
 
     Quat cam_pitch = QuatFromAxisAngle(Vec3Up, controls_cam_rot.y);
     Quat cam_yaw = QuatFromAxisAngle(Vec3Right, controls_cam_rot.x);
-    Quat cam_rot = QuatNorm(QuatMul(cam_pitch, cam_yaw));
+    Quat cam_rot = QuatNorm(QuatMulQ(cam_pitch, cam_yaw));
 
     Vec3 cam_forward = Vec3MulQ(Vec3Forward, cam_rot);
     Vec3 cam_right = Vec3MulQ(Vec3Right, cam_rot);

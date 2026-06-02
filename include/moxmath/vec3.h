@@ -27,7 +27,7 @@ Vec3 Vec3Inv(Vec3 a);
 float Vec3Dot(Vec3 a, Vec3 b);
 float Vec3Mag(Vec3 a);
 Vec3 Vec3Norm(Vec3 a);
-float Vec3NDot(Vec3 a, Vec3 b);
+float Vec3CosSim(Vec3 a, Vec3 b);
 float Vec3Dist(Vec3 a, Vec3 b);
 Vec3 Vec3Cross(Vec3 a, Vec3 b);
 Vec3 Vec3Lerp(Vec3 a, Vec3 b, float t);

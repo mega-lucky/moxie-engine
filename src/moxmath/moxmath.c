@@ -8,6 +8,7 @@ float fclampf(float x, float min, float max) {
     return fmaxf(fminf(x, max), min);
 }
 
+// VEC2 FUNCTIONS
 Vec2 Vec2Add(Vec2 a, Vec2 b) {
     return (Vec2) {
         .x = a.x + b.x,
@@ -20,9 +21,75 @@ Vec2 Vec2Sub(Vec2 a, Vec2 b) {
         .y = a.y - b.y,
     };
 }
+Vec2 Vec2MulV2(Vec2 a, Vec2 b) {
+    return (Vec2) {
+        .x = a.x * b.x,
+        .y = a.y * b.y
+    };
+}
+Vec2 Vec2MulF(Vec2 a, float b) {
+    return (Vec2) {
+        .x = a.x * b,
+        .y = a.y * b
+    };
+}
+Vec2 Vec2DivV2(Vec2 a, Vec2 b) {
+    return (Vec2) {
+        .x = a.x / b.x,
+        .y = a.y / b.y
+    };
+}
+Vec2 Vec2DivF(Vec2 a, float b) {
+    return (Vec2) {
+        .x = a.x / b,
+        .y = a.y / b
+    };
+}
+Vec2 Vec2Inv(Vec2 a) {
+    return (Vec2) {
+        .x = -a.x,
+        .y = -a.y
+    };
+}
+float Vec2Dot(Vec2 a, Vec2 b) {
+    return fmaf(a.x, b.x, a.y * b.y);
+}
 float Vec2Mag(Vec2 a) {
     return sqrt(a.x*a.x + a.y*a.y);
 }
+Vec2 Vec2Norm(Vec2 a) {
+    return Vec2DivF(a, Vec2Mag(a));
+}
+float Vec2CosSim(Vec2 a, Vec2 b) {
+    return Vec2Dot(Vec2Norm(a), Vec2Norm(b));
+}
+float Vec2Dist(Vec2 a, Vec2 b) {
+    return Vec2Mag(Vec2Sub(a, b));
+}
+Vec2 Vec2Lerp(Vec2 a, Vec2 b, float t) {
+    return (Vec2) {
+        .x = lerp(a.x, b.x, t),
+        .y = lerp(a.y, b.y, t)
+    };
+}
+Vec2 Vec2Min(Vec2 a, Vec2 b) {
+    return (Vec2) {
+        .x = fminf(a.x, b.x),
+        .y = fminf(a.y, b.y),
+    };
+}
+Vec2 Vec2Max(Vec2 a, Vec2 b) {
+    return (Vec2) {
+        .x = fmaxf(a.x, b.x),
+        .y = fmaxf(a.y, b.y),
+    };
+}
+int Vec2Equals(Vec2 a, Vec2 b) {
+    return a.x == b.x
+        && a.y == b.y;
+}
+
+// VEC3 FUNCTIONS
 Vec3 Vec3Add(Vec3 a, Vec3 b) {
     return (Vec3) {
         .x = a.x + b.x,
@@ -64,7 +131,6 @@ Vec3 Vec3DivV3(Vec3 a, Vec3 b) {
         .z = a.z / b.z
     };
 }
-
 Vec3 Vec3DivF(Vec3 a, float f) {
     return (Vec3) {
         .x = a.x / f,
@@ -72,33 +138,26 @@ Vec3 Vec3DivF(Vec3 a, float f) {
         .z = a.z / f
     };
 }
-
 Vec3 Vec3Inv(Vec3 a) {
     return (Vec3) { .x = -a.x, .y = -a.y, .z = -a.z };
 }
-
 float Vec3Dot(Vec3 a, Vec3 b) {
     return fmaf(a.x, b.x, fmaf(a.y, b.y, a.z * b.z));
 }
-
 float Vec3Mag(Vec3 a) {
     return sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
 }
-
 Vec3 Vec3Norm(Vec3 a) {
     float Mag = Vec3Mag(a);
     if (Mag == 0.0f) { return (Vec3){0}; }
     return Vec3DivF(a, Mag);
 }
-
-float Vec3NDot(Vec3 a, Vec3 b) {
+float Vec3CosSim(Vec3 a, Vec3 b) {
     return Vec3Dot(Vec3Norm(a), Vec3Norm(b));
 }
-
 float Vec3Dist(Vec3 a, Vec3 b) {
     return Vec3Mag(Vec3Sub(a, b));
 }
-
 Vec3 Vec3Cross(Vec3 a, Vec3 b) {
     float x = (a.y * b.z) - (b.y * a.z);
     float y = (a.x * b.z) - (b.x * a.z);
@@ -106,7 +165,6 @@ Vec3 Vec3Cross(Vec3 a, Vec3 b) {
     
     return (Vec3){.x = x, .y = 0.0f-y, .z = z};
 }
-
 Vec3 Vec3Lerp(Vec3 a, Vec3 b, float t) {
     return (Vec3) {
         .x = lerp(a.x, b.x, t),
@@ -114,7 +172,6 @@ Vec3 Vec3Lerp(Vec3 a, Vec3 b, float t) {
         .z = lerp(a.z, b.z, t),
     };
 }
-
 Vec3 Vec3Min(Vec3 a, Vec3 b) {
     return (Vec3) {
         .x = fminf(a.x, b.x),
@@ -122,7 +179,6 @@ Vec3 Vec3Min(Vec3 a, Vec3 b) {
         .z = fminf(a.z, b.z),
     };
 }
-
 Vec3 Vec3Max(Vec3 a, Vec3 b) {
     return (Vec3){
         .x = fmaxf(a.x, b.x),
@@ -130,12 +186,74 @@ Vec3 Vec3Max(Vec3 a, Vec3 b) {
         .z = fmaxf(a.z, b.z),
     };
 }
-
 int Vec3Equals(Vec3 a, Vec3 b) {
     return a.x == b.x && a.y == b.y && a.z == b.z;
 }
-Vec4 Vec4FromV3(Vec3 v) {
-    return Vec4New(v.x,v.y,v.z,0.0f);
+
+// VEC4 FUNCTIONS
+Vec4 Vec4Add(Vec4 a, Vec4 b) {
+    return (Vec4) {
+        .x = a.x + b.x,
+        .y = a.y + b.y,
+        .z = a.z + b.z,
+        .w = a.w + b.w
+    };
+}
+Vec4 Vec4Sub(Vec4 a, Vec4 b) {
+    return (Vec4) {
+        .x = a.x - b.x,
+        .y = a.y - b.y,
+        .z = a.z - b.z,
+        .w = a.w - b.w
+    };
+}
+Vec4 Vec4MulV4(Vec4 a, Vec4 b) {
+    return (Vec4) {
+        .x = a.x * b.x,
+        .y = a.y * b.y,
+        .z = a.w * b.z,
+        .w = a.w * b.w
+    };
+}
+Vec4 Vec4MulF(Vec4 a, float b) {
+    return (Vec4) {
+        .x = a.x * b,
+        .y = a.y * b,
+        .z = a.z * b,
+        .w = a.w * b
+    };
+}
+Vec4 Vec4MulM4(Vec4 a, Mat4x4 m) {
+    return (Vec4){
+        .x = a.x * m.m00 + a.y * m.m01 + a.z * m.m02 + a.w * m.m03,
+        .y = a.x * m.m10 + a.y * m.m11 + a.z * m.m12 + a.w * m.m13,
+        .z = a.x * m.m20 + a.y * m.m21 + a.z * m.m22 + a.w * m.m23,
+        .w = a.x * m.m30 + a.y * m.m31 + a.z * m.m32 + a.w * m.m33,
+    };
+}
+Vec4 Vec4MulQ(Vec4 a, Quat q) {
+    return QuatAsVec4(
+        QuatMulQ(q, QuatMulQ(Vec4AsQuat(a), QuatInv(q)))
+    );
+}
+Vec4 Vec4DivV4(Vec4 a, Vec4 b) {
+    return (Vec4) {
+        .x = a.x / b.x,
+        .y = a.y / b.y,
+        .z = a.z / b.z,
+        .w = a.w / b.w
+    };
+}
+Vec4 Vec4DivF(Vec4 a, float b) {
+    return (Vec4) {
+        .x = a.x / b,
+        .y = a.y / b,
+        .z = a.z / b,
+        .w = a.w / b
+    };
+}
+Vec4 Vec4Inv(Vec4 a) {
+    return (Vec4) { .x = -a.x, .y = -a.y, .z = -a.z, .w = -a.w };
 }
 float Vec4Dot(Vec4 a, Vec4 b) {
     return fmaf(a.x, b.x, fmaf(a.y, b.y, fmaf(a.z, b.z, a.w * b.w)));
@@ -153,11 +271,48 @@ Vec4 Vec4Norm(Vec4 a) {
 
     return result;
 }
+float Vec4CosSim(Vec4 a, Vec4 b) {
+    return Vec4Dot(Vec4Norm(a), Vec4Norm(b));
+}
+float Vec4Dist(Vec4 a, Vec4 b) {
+    return Vec4Mag(Vec4Sub(a, b));
+}
+Vec4 Vec4Lerp(Vec4 a, Vec4 b, float t) {
+    return (Vec4) {
+        .x = lerp(a.x, b.x, t),
+        .y = lerp(a.y, b.y, t),
+        .z = lerp(a.z, b.z, t),
+        .w = lerp(a.w, b.w, t),
+    };
+}
+Vec4 Vec4Min(Vec4 a, Vec4 b) {
+    return (Vec4) {
+        .x = fminf(a.x, b.x),
+        .y = fminf(a.y, b.y),
+        .z = fminf(a.z, b.z),
+        .w = fminf(a.w, b.w),
+    };
+}
+Vec4 Vec4Max(Vec4 a, Vec4 b) {
+    return (Vec4) {
+        .x = fmaxf(a.x, b.x),
+        .y = fmaxf(a.y, b.y),
+        .z = fmaxf(a.z, b.z),
+        .w = fmaxf(a.w, b.w),
+    };
+}
+int Vec4Equals(Vec4 a, Vec4 b) {
+    return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;
+}
 Quat Vec4AsQuat(Vec4 a) {
     union { Quat q; Vec4 v; } u = { .v = a };
     return u.q;
 }
+Vec4 Vec4FromV3(Vec3 v) {
+    return Vec4New(v.x,v.y,v.z,0.0f);
+}
 
+// QUATERNION FUNCTIONS
 Quat Quaternion(float x, float y, float z, float w) {
     float half = w / 2.0f;
     
@@ -170,12 +325,10 @@ Quat Quaternion(float x, float y, float z, float w) {
 
     return Vec4AsQuat(Vec4Norm(result));
 }
-
 Quat QuatFromAxisAngle(Vec3 axis, float angle) {
     return Quaternion(axis.x, axis.y, axis.z, angle);
 }
-
-Quat QuatMul(Quat q2, Quat q1) {
+Quat QuatMulQ(Quat q2, Quat q1) {
     Quat result = {
         .x = q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y,
         .y = q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x,
@@ -184,13 +337,16 @@ Quat QuatMul(Quat q2, Quat q1) {
     };
     return result;
 }
-
 Quat QuatInv(Quat q) {
     float mag2 = q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z;
 
-    return Vec4AsQuat(Vec4New(-q.x / mag2, -q.y / mag2, -q.z / mag2, q.w / mag2));
+    return (Quat) {
+        .x = -q.x / mag2,
+        .y = -q.y / mag2,
+        .z = -q.z / mag2,
+        .w = q.w / mag2
+    };
 }
-
 Quat QuatNorm(Quat a) {
     Quat result = a;
 
@@ -201,25 +357,9 @@ Quat QuatNorm(Quat a) {
 
     return result;
 }
-
 Vec4 QuatAsVec4(Quat a) {
     union { Quat q; Vec4 v; } u = { .q = a };
     return u.v;
-}
-
-Vec4 Vec4MulM4(Vec4 a, Mat4x4 m) {
-    return (Vec4){
-        .x = a.x * m.m00 + a.y * m.m01 + a.z * m.m02 + a.w * m.m03,
-        .y = a.x * m.m10 + a.y * m.m11 + a.z * m.m12 + a.w * m.m13,
-        .z = a.x * m.m20 + a.y * m.m21 + a.z * m.m22 + a.w * m.m23,
-        .w = a.x * m.m30 + a.y * m.m31 + a.z * m.m32 + a.w * m.m33,
-    };
-}
-
-Vec4 Vec4MulQ(Vec4 a, Quat q) {
-    return QuatAsVec4(
-        QuatMul(q, QuatMul(Vec4AsQuat(a), QuatInv(q)))
-    );
 }
 
 Mat4x4 Mat4Transpose(Mat4x4 a) {

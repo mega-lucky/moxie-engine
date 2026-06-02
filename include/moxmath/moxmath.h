@@ -6,6 +6,7 @@
 #include "moxmath/vec4.h"
 #include "moxmath/mat4x4.h"
 #include "moxmath/quat.h"
+#include "moxmath/types.h"
 #include <math.h>
 
 #define PI 3.141592654

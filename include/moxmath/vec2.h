@@ -10,6 +10,19 @@
 
 Vec2 Vec2Add(Vec2 a, Vec2 b);
 Vec2 Vec2Sub(Vec2 a, Vec2 b);
+Vec2 Vec2MulV2(Vec2 a, Vec2 b);
+Vec2 Vec2MulF(Vec2 a, float b);
+Vec2 Vec2DivV2(Vec2 a, Vec2 b);
+Vec2 Vec2DivF(Vec2 a, float b);
+Vec2 Vec2Inv(Vec2 a);
+float Vec2Dot(Vec2 a, Vec2 b);
 float Vec2Mag(Vec2 a);
+Vec2 Vec2Norm(Vec2 a);
+float Vec2CosSim(Vec2 a, Vec2 b);
+float Vec2Dist(Vec2 a, Vec2 b);
+Vec2 Vec2Lerp(Vec2 a, Vec2 b, float t);
+Vec2 Vec2Min(Vec2 a, Vec2 b);
+Vec2 Vec2Max(Vec2 a, Vec2 b);
+int Vec2Equals(Vec2 a, Vec2 b);
 
 #endif

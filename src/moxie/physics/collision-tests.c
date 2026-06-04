@@ -351,7 +351,14 @@ CollisionManifold SweptSATTest(EntityID first, EntityID second) {
         .collided = false
     };
 
-    if (!collision_a || !transform_a || !collision_b || !transform_b) {
+    if (
+        !collision_a ||
+        !transform_a ||
+        !collision_b ||
+        !transform_b ||
+        collision_a->NonCollidable ||
+        collision_b->NonCollidable
+    ) {
         return null_result;
     }
 
@@ -400,4 +407,171 @@ CollisionManifold SweptSATTest(EntityID first, EntityID second) {
         result = fabsf(dot_b) > fabsf(dot_a) ? result_b : result_a;
     }
     return result;
+}
+
+Vec3 gjk_get_furthest_point(Vec3 dir, Collision *collision_data, Transform transform) {
+    if (collision_data->VertexCount == 0) { return Vec3Zero; }
+    const Vec3 *verts = collision_data->VertexPositions;
+
+    size_t furthest_indx = 0;
+    float furthest_dist = Vec3Dot(dir, TransformPoint(verts[0], transform));
+
+    for (size_t i = 1; i < collision_data->VertexCount; i ++) {
+        Vec3 vert_pos = TransformPoint(verts[i], transform);
+        float current_dist = Vec3Dot(dir, vert_pos);
+        if (current_dist < furthest_dist) {
+            continue;
+        }
+
+        furthest_dist = current_dist;
+        furthest_indx = i;
+    }
+
+    return TransformPoint(verts[furthest_indx], transform);
+}
+
+Vec3 gjk_support(
+    Vec3 dir, 
+    Collision *collision_a, Transform *transform_a,
+    Collision *collision_b, Transform *transform_b
+) {
+    Vec3 a_furthest = gjk_get_furthest_point(dir, collision_a, *transform_a);
+    Vec3 b_furthest = gjk_get_furthest_point(Vec3Inv(dir), collision_b, *transform_b);
+
+    return Vec3Sub(a_furthest, b_furthest);
+}
+
+bool gjk_simplex_contains_origin(Vec3 *simplex, size_t *n_verts, Vec3 *dir) {
+    switch (*n_verts) {
+        case 2: {
+            Vec3 B = simplex[0];
+            Vec3 A = simplex[1];
+
+            Vec3 AB = Vec3Sub(B, A);
+            Vec3 AO = Vec3Inv(A);
+
+            Vec3 perpAB = Vec3Cross(Vec3Cross(AB, AO), AB);
+            *dir = Vec3Norm(perpAB);
+
+            return false;
+        }
+        case 3: {
+            Vec3 C = simplex[0];
+            Vec3 B = simplex[1];
+            Vec3 A = simplex[2];
+
+            Vec3 AC = Vec3Sub(C, A);
+            Vec3 AB = Vec3Sub(B, A);
+            Vec3 AO = Vec3Inv(A);
+
+            Vec3 ABC = Vec3Cross(AB, AC);
+
+            Vec3 perpAB = Vec3Cross(AB, ABC);
+            Vec3 perpAC = Vec3Cross(ABC, AC);
+
+            if (Vec3Dot(AO, perpAB) > 0.0f) {
+                *dir = perpAB;
+                simplex[0] = B;
+                simplex[1] = A;
+                *n_verts = 2;
+                return false;
+            } else if (Vec3Dot(AO, perpAC) > 0.0f) {
+                *dir = perpAC;
+                simplex[0] = C;
+                simplex[1] = A;
+                *n_verts = 2;
+                return false;
+            }
+
+            float d = Vec3Dot(AO, ABC);
+            if (fabsf(d) < 1e-6f) {
+                return true;
+            } else if (d > 0.0f) {
+                *dir = Vec3Norm(ABC);
+            } else {
+                Vec3 tmp = simplex[0];
+                simplex[0] = simplex[1];
+                simplex[1] = tmp;
+                *dir = Vec3Norm(Vec3Inv(ABC));
+            }
+            return false;
+
+        }
+        case 4: {
+            Vec3 D = simplex[0];
+            Vec3 C = simplex[1];
+            Vec3 B = simplex[2];
+            Vec3 A = simplex[3];
+
+            Vec3 AD = Vec3Sub(D, A);
+            Vec3 AC = Vec3Sub(C, A);
+            Vec3 AB = Vec3Sub(B, A);
+            Vec3 AO = Vec3Inv(A);
+
+            Vec3 ABC = Vec3Cross(AB, AC);
+            if (Vec3Dot(ABC, AD) > 0.0f) ABC = Vec3Inv(ABC);
+
+            Vec3 ACD = Vec3Cross(AC, AD);
+            if (Vec3Dot(ACD, AB) > 0.0f) ACD = Vec3Inv(ACD);
+
+            Vec3 ADB = Vec3Cross(AD, AB);
+            if (Vec3Dot(ADB, AC) > 0.0f) ADB = Vec3Inv(ADB);
+
+            if (Vec3Dot(AO, ABC) > 0.0f) {
+                *dir = Vec3Norm(ABC);
+                simplex[0] = B;
+                simplex[1] = C;
+                simplex[2] = A;
+                *n_verts = 3;
+                return false;
+            } else if (Vec3Dot(AO, ACD) > 0.0f) {
+                *dir = Vec3Norm(ACD);
+                simplex[0] = C;
+                simplex[1] = D;
+                simplex[2] = A;
+                *n_verts = 3;
+                return false;
+            } else if (Vec3Dot(AO, ADB) > 0.0f) {
+                *dir = Vec3Norm(ADB);
+                simplex[0] = D;
+                simplex[1] = B;
+                simplex[2] = A;
+                *n_verts = 3;
+                return false;
+            }
+
+            return true;
+        }
+        default: {
+            printf("%zu\n", *n_verts);
+            return false;
+        }
+    }
+}
+
+bool gjk_overlap(EntityID first, EntityID second) {
+    Collision *collision_a = GetCollision(first);
+    Transform *transform_a = GetTransform(first);
+    Collision *collision_b = GetCollision(second);
+    Transform *transform_b = GetTransform(second);
+
+    Vec3 dir = Vec3Right;
+    Vec3 simplex[4] = {gjk_support(dir, collision_a, transform_a, collision_b, transform_b)};
+    size_t n_verts = 1;
+
+    dir = Vec3Norm(Vec3Inv(simplex[0]));
+    for (int i = 0; i < 64; i ++) {
+        Vec3 support = gjk_support(dir, collision_a, transform_a, collision_b, transform_b);
+
+        if (Vec3Dot(dir, support) < 0) {
+            return false;
+        }
+            
+        simplex[n_verts++] = support;
+
+        if (gjk_simplex_contains_origin(simplex, &n_verts, &dir))
+            return true;
+    }
+
+    return false;
 }

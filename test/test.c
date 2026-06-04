@@ -6,7 +6,9 @@
 #include "moxie/controls.h"
 #include <stdlib.h>
 
-char *read_file(const char *path) {
+bool gjk_overlap(EntityID first, EntityID second);
+
+static char *read_file(const char *path) {
     FILE *f = fopen(path, "rb");
     if (!f) return NULL;
 
@@ -32,18 +34,18 @@ typedef struct Player Player;
 ComponentMask player_mask = 0;
 
 EntityID character = -1;
-EntityID orb = -1;
 EntityID floor_entity = -1;
 
 void PlayerSystemUpdate(void *data) {
     (void)data;
     Player *player = GetSingleton(player_mask);
     ControlState *controls = GetControls();
-    InputState *inputs = GetInputs();
-
+    
     if (!player || !controls) { return; }
-
+    
+    MeshRender *mesh_render = GetMeshRender(player->character);
     Camera *camcomp = GetCamera(player->camera);
+
     camcomp->Frustrum.AspectRatio = GetWindowAspectRatio();
 
     Vec2 controls_cam_rot = controls->CameraRotation;
@@ -54,45 +56,29 @@ void PlayerSystemUpdate(void *data) {
     );
 
     Transform *char_transform = GetTransform(player->character);
-    Quat char_rotation = QuatFromAxisAngle(Vec3Up, controls_cam_rot.y);
-    char_transform->Rotation = char_rotation;
 
-
-    Quat cam_pitch = QuatFromAxisAngle(Vec3Up, controls_cam_rot.y);
-    Quat cam_yaw = QuatFromAxisAngle(Vec3Right, controls_cam_rot.x);
-    Quat cam_rot = QuatNorm(QuatMulQ(cam_pitch, cam_yaw));
-
-    Vec3 cam_forward = Vec3MulQ(Vec3Forward, cam_rot);
-    Vec3 cam_right = Vec3MulQ(Vec3Right, cam_rot);
-
-    Vec3 cam_lookat_position = Vec3Add(
+    Vec3 cam_position = Vec3Add(
         char_transform->Position,
-        Vec3MulQ(player->camera_offset, char_rotation)
+        Vec3New(0, 0, 12.0f)
     );
-    Vec3 cam_position = Vec3MulF(cam_forward, -12.0f);
-    cam_position = Vec3Add(cam_position, cam_lookat_position);
     
     Transform *cam_transform = GetTransform(player->camera);
-    cam_transform->Rotation = cam_rot;
     cam_transform->Position = cam_position;
     
 
     Vec3 char_move_direction = Vec3Add(
-        Vec3MulF(cam_forward, controls->MoveDirection.z),
-        Vec3MulF(cam_right, controls->MoveDirection.x)
+        Vec3MulF(Vec3Up, controls->MoveDirection.z),
+        Vec3MulF(Vec3Right, controls->MoveDirection.x)
     );
-    char_move_direction.y = 0.0f;
     char_move_direction = Vec3Norm(char_move_direction);
 
     RigidBody *rigidbody = GetRigidBody(player->character);
-    
-    Vec3 XZ_velocity = Vec3MulF(Vec3Norm(char_move_direction), 10.0f);
-    
-    rigidbody->Velocity.x = XZ_velocity.x;
-    rigidbody->Velocity.z = XZ_velocity.z;
+    rigidbody->Velocity = Vec3MulF(char_move_direction, 10.0f);
 
-    if (IS_INPUT_STARTED(inputs->KeyButtons[' '])) {
-        rigidbody->Velocity.y = 50.0f;
+    if (gjk_overlap(character, floor_entity)) {
+        mesh_render->Colour = Vec4New(1.0f, 0.0f, 0.0f, 1.0f);
+    } else {
+        mesh_render->Colour = Vec4New(0.0f, 0.0f, 1.0f, 1.0f);
     }
 }
 
@@ -110,7 +96,7 @@ int main() {
     UploadMesh(cube_mesh, STATIC_DRAW);
     cube_mesh->Material = default_material;
     
-    Mesh *sphere_mesh = SphereMesh(0.5f, 6, 12);
+    Mesh *sphere_mesh = SphereMesh(0.5f, 12, 24);
     UploadMesh(sphere_mesh, STATIC_DRAW);
     sphere_mesh->Material = default_material;
 
@@ -129,66 +115,39 @@ int main() {
         MeshRenderMask() | TransformMask() |
         CollisionMask() | RigidBodyMask();
 
-    character = NewEntity();
     {
+        character = NewEntity();
         EntityGiveComponents(character, basepart);
         Transform *transform = GetTransform(character);
-        transform->Scale = Vec3New(2.0f, 4.0f, 2.0f);
+        transform->Scale = Vec3New(4.0f, 4.0f, 4.0f);
+        transform->Rotation = QuatFromAxisAngle(Vec3Up, RADIANS(45.0f));
         
         MeshRender *mesh_render = GetMeshRender(character);
         mesh_render->Mesh = cube_mesh;
         mesh_render->Colour = Vec4New(0.4f, 0.7f, 0.6f, 1.0f);
         mesh_render->Material = default_material;
-        
-        transform->Position = Vec3New(-20.0f, 0.0f, -15.0f);
 
         Collision *collision = GetCollision(character);
         InitCollisionFromMesh(mesh_render->Mesh, collision);
-
-        GetRigidBody(character)->Acceleration.y = -100.0f;
+        collision->NonCollidable = true;
     }
     {
         floor_entity = NewEntity();
         EntityGiveComponents(floor_entity, basepart);
 
         Transform *transform = GetTransform(floor_entity);
-        transform->Scale = Vec3New(100.0f, 2.0f, 100.0f);
-        transform->Position = Vec3New(0.0f, -10.0f, 0.0f);
+        transform->Scale = Vec3New(10.0f, 2.0f, 2.0f);
         
         MeshRender *mesh_render = GetMeshRender(floor_entity);
         mesh_render->Mesh = cube_mesh;
         mesh_render->Colour = Vec4New(0.7f, 0.3f, 0.4f, 1.0f);
         mesh_render->Material = default_material;
 
-        Collision *collision = GetCollision(floor_entity);
-        InitCollisionFromMesh(mesh_render->Mesh, collision);
-
         GetRigidBody(floor_entity)->Static = true;
-    }
-    Material *goat_material = CreateMaterial();
-    Texture *goat_texture = GenTextureFromFileName("test/assets/image/goat.jpg");
-    UploadTexture(goat_texture);
-    goat_material->Texture = goat_texture;
-    goat_material->Shader = default_material->Shader;
-    {
-        orb = NewEntity();
-        EntityGiveComponents(orb, basepart);
 
-        Transform *transform = GetTransform(orb);
-        transform->Scale = Vec3New(15.0f,15.0f,15.0f);
-        transform->Position = Vec3New(0.0f, 0.0f, 0.0f);
-        transform->Rotation = QuatFromAxisAngle(Vec3Up, RADIANS(45.0f));
-        
-        MeshRender *mesh_render = GetMeshRender(orb);
-        mesh_render->Mesh = cube_mesh;
-        mesh_render->Colour = Vec4New(1.0f, 1.0f, 1.0f, 1.0f);
-        mesh_render->Material = goat_material;
-
-        Collision *collision = GetCollision(orb);
-        InitCollisionFromMesh(mesh_render->Mesh, collision);
-
-        RigidBody *rigidbody = GetRigidBody(orb);
-        rigidbody->Acceleration.y = -100.0f;
+        Collision *collision = GetCollision(floor_entity);
+        InitCollisionFromMesh(cube_mesh, collision);
+        collision->NonCollidable = true;
     }
 
     player_mask = RegisterSingleton((ComponentDescription){
@@ -217,8 +176,6 @@ int main() {
     DestroyMesh(sphere_mesh);
     DestroyShader(default_material->Shader);
     DestroyMaterial(default_material);
-    DestroyMaterial(goat_material);
-    DestroyTexture(goat_texture);
     TerminateGame();
     return 0;
 }

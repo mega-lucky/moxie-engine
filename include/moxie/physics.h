@@ -13,6 +13,7 @@ typedef struct Collision {
     size_t NormalCount;
     size_t VertexCount;
     size_t EdgeCount;
+    bool NonCollidable;
 } Collision;
 
 typedef struct CollisionSystemState {

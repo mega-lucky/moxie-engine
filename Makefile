@@ -5,6 +5,7 @@ ifeq ($(UNAME_S),Linux)
 	STATIC_EXT := .a
 	TEST_EXEC_EXT := .out
 	LDLIBS := -lglfw -lm -lfreetype
+	LM := -lm
 	TEST_RPATH := -Wl,-rpath='$$ORIGIN'
 endif
 ifeq ($(UNAME_S),Darwin)
@@ -72,6 +73,7 @@ test: shared
 	$(TEST_CFLAGS) \
 	$(TEST_RPATH) \
 	-l$(LIB_NAME) \
+	$(LM) \
 	-o $(TEST_BIN)
 
 test-run: test

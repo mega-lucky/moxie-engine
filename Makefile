@@ -68,7 +68,6 @@ $(BUILD_DIR)/obj/%.o: %.c
 
 test: shared
 	$(CC) $(TEST_SRC) \
-	-Iinclude \
 	-L$(BUILD_DIR) \
 	$(TEST_CFLAGS) \
 	$(TEST_RPATH) \

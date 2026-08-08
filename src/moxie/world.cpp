@@ -18,7 +18,9 @@ Entity World::NewEntity() {
 }
 
 void World::Update() {
-    
+    for (auto &sys : m_systems) {
+        sys->Update();
+    }
 }
 
 void World::DeleteEntity(Entity entity) {

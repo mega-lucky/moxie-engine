@@ -59,4 +59,9 @@ ComponentID World::GetComponentID() {
     return id;
 }
 
+template<typename T>
+void World::RegisterSystem(std::string name) {
+    m_systems.push_back(std::make_unique<T>());
+}
+
 #endif

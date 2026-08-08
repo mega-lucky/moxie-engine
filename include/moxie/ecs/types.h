@@ -40,8 +40,7 @@ public:
     template<typename T> void GiveComponent(Entity entity);
     template<typename T> void RemoveComponent(Entity entity);
     template<typename T> ComponentID GetComponentID();
-
-    void RegisterSystem(IWorldSystem &system);
+    template<typename T> void RegisterSystem(std::string name);
 };
 
 class World::IComponentPool {
@@ -67,10 +66,8 @@ public:
 };
 
 class IWorldSystem {
-    std::string Name;
 public:
     virtual ~IWorldSystem() = default;
-    virtual void OnRegistry() = 0;
     virtual void Update() = 0;
 };
 

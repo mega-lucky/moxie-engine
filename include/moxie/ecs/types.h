@@ -21,10 +21,16 @@ private:
     class IComponentPool;
     template<typename T> class ComponentPool;
 
+    struct system_desc {
+        std::string name;
+        int priority;
+        std::unique_ptr<IWorldSystem> system;
+    };
+
     std::vector<Signature> m_signatures;
     std::vector<Entity> m_entities;
     std::vector<std::unique_ptr<IComponentPool>> m_components;
-    std::vector<std::unique_ptr<IWorldSystem>> m_systems;
+    std::vector<system_desc> m_systems;
 
     ComponentID next_component_id();
 
@@ -40,7 +46,10 @@ public:
     template<typename T> void GiveComponent(Entity entity);
     template<typename T> void RemoveComponent(Entity entity);
     template<typename T> ComponentID GetComponentID();
+    template<typename T> void RegisterSystem();
     template<typename T> void RegisterSystem(std::string name);
+    template<typename T> void RegisterSystem(int priority);
+    template<typename T> void RegisterSystem(std::string name, int priority);
 };
 
 class World::IComponentPool {
@@ -67,6 +76,7 @@ public:
 
 class IWorldSystem {
 public:
+    const std::string Name;
     virtual ~IWorldSystem() = default;
     virtual void Update() = 0;
 };

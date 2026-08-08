@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <format>
 #include "./ecs/types.h"
 #include "./ecs/component.h"
 
@@ -38,8 +39,8 @@ void World::GiveComponent(Entity entity) {
     ComponentID id = GetComponentID<T>();
     Signature &entity_sig = m_signatures[entity];
     entity_sig.set(id, true);
-    auto* pool = static_cast<ComponentPool<T>*>(m_components[id].get());
-    pool->Add(entity);
+    
+    m_components.at(id)->Add(entity);
 }
 
 template<typename T>
@@ -49,8 +50,8 @@ void World::RemoveComponent(Entity entity) {
     ComponentID id = GetComponentID<T>();
     Signature &entity_sig = m_signatures[entity];
     entity_sig.set(id, false);
-    auto* pool = static_cast<ComponentPool<T>*>(m_components[id].get());
-    pool->Remove(entity);
+    
+    m_components.at(id)->Remove(entity);
 }
 
 template<typename T>
@@ -60,8 +61,43 @@ ComponentID World::GetComponentID() {
 }
 
 template<typename T>
+void World::RegisterSystem() {
+    system_desc new_desc = {
+        .name = std::format("System {}", m_systems.size() + 1),
+        .priority = 0,
+        .system = std::make_unique<T>()
+    };
+    m_systems.push_back(std::move(new_desc));
+}
+
+template<typename T>
+void World::RegisterSystem(int priority) {
+    system_desc new_desc = {
+        .name = std::format("System {}", m_systems.size() + 1),
+        .priority = priority,
+        .system = std::make_unique<T>()
+    };
+    m_systems.push_back(std::move(new_desc));
+}
+
+template<typename T>
 void World::RegisterSystem(std::string name) {
-    m_systems.push_back(std::make_unique<T>());
+    system_desc new_desc = {
+        .name = name,
+        .priority = 0,
+        .system = std::make_unique<T>()
+    };
+    m_systems.push_back(std::move(new_desc));
+}
+
+template<typename T>
+void World::RegisterSystem(std::string name, int priority) {
+    system_desc new_desc = {
+        .name = name,
+        .priority = priority,
+        .system = std::make_unique<T>()
+    };
+    m_systems.push_back(std::move(new_desc));
 }
 
 #endif

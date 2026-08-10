@@ -1,7 +1,5 @@
 #include "moxie/world.hpp"
 
-#include <iostream>
-
 World::World() {
     m_components.reserve(max_components);
     m_entities.reserve(max_entities),
@@ -21,7 +19,6 @@ Entity World::NewEntity() {
 
 void World::Update() {
     for (auto &sys_desc : m_systems) {
-        std::cout << sys_desc.name << std::endl;
         sys_desc.system->Update();
     }
 }

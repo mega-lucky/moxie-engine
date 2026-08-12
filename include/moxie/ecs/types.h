@@ -10,9 +10,11 @@ using Entity = uint32_t;
 using ComponentID = uint32_t;
 using Signature = std::bitset<128>;
 
+namespace World {
+
 class IWorldSystem;
 
-class World {
+class Registry {
 private:
     size_t max_entities = 1024;
     size_t max_components = 128;
@@ -37,7 +39,7 @@ private:
     ComponentID next_component_id();
 
 public:
-    World();
+    Registry();
     Entity NewEntity();
     void DeleteEntity(Entity entity);
     void Update();
@@ -54,7 +56,7 @@ public:
     template<typename T> void RegisterSystem(std::string name, int priority);
 };
 
-class World::IComponentPool {
+class Registry::IComponentPool {
 public:
     virtual ~IComponentPool() = default;
     virtual void Add(Entity entity) = 0;
@@ -63,7 +65,7 @@ public:
 };
 
 template<typename T>
-class World::ComponentPool : public World::IComponentPool {
+class Registry::ComponentPool : public Registry::IComponentPool {
 private:
     std::vector<T> m_data;
     std::vector<int32_t> m_sparse;
@@ -82,5 +84,7 @@ public:
     virtual ~IWorldSystem() = default;
     virtual void Update() = 0;
 };
+
+}
 
 #endif

@@ -7,8 +7,10 @@
 #include "./ecs/types.h"
 #include "./ecs/component.h"
 
+namespace World {
+
 template<typename T>
-void World::RegisterComponent() {
+void Registry::RegisterComponent() {
     ComponentID id = GetComponentID<T>();
 
     if (id >= m_components.size()) {
@@ -19,21 +21,21 @@ void World::RegisterComponent() {
 }
 
 template<typename T>
-bool World::EntityHasComponent(Entity entity) {
+bool Registry::EntityHasComponent(Entity entity) {
     ComponentID comp_id = GetComponentID<T>();
     Signature sig = m_signatures[entity];
     return sig.test(comp_id);
 }
 
 template<typename T>
-T& World::GetComponent(Entity entity) {
+T& Registry::GetComponent(Entity entity) {
     ComponentID id = GetComponentID<T>();
     auto* pool = static_cast<ComponentPool<T>*>(m_components[id].get());
     return pool->Get(entity);
 }
 
 template<typename T>
-void World::GiveComponent(Entity entity) {
+void Registry::GiveComponent(Entity entity) {
     if (EntityHasComponent<T>(entity)) { return; }
 
     ComponentID id = GetComponentID<T>();
@@ -44,7 +46,7 @@ void World::GiveComponent(Entity entity) {
 }
 
 template<typename T>
-void World::RemoveComponent(Entity entity) {
+void Registry::RemoveComponent(Entity entity) {
     if (!EntityHasComponent<T>(entity)) { return; }
 
     ComponentID id = GetComponentID<T>();
@@ -55,13 +57,13 @@ void World::RemoveComponent(Entity entity) {
 }
 
 template<typename T>
-ComponentID World::GetComponentID() {
+ComponentID Registry::GetComponentID() {
     static ComponentID id = next_component_id();
     return id;
 }
 
 template<typename T>
-void World::RegisterSystem() {
+void Registry::RegisterSystem() {
     system_desc new_desc = {
         .name = std::format("System {}", m_systems.size() + 1),
         .priority = 0,
@@ -71,7 +73,7 @@ void World::RegisterSystem() {
 }
 
 template<typename T>
-void World::RegisterSystem(int priority) {
+void Registry::RegisterSystem(int priority) {
     system_desc new_desc = {
         .name = std::format("System {}", m_systems.size() + 1),
         .priority = priority,
@@ -81,7 +83,7 @@ void World::RegisterSystem(int priority) {
 }
 
 template<typename T>
-void World::RegisterSystem(std::string name) {
+void Registry::RegisterSystem(std::string name) {
     system_desc new_desc = {
         .name = name,
         .priority = 0,
@@ -91,13 +93,15 @@ void World::RegisterSystem(std::string name) {
 }
 
 template<typename T>
-void World::RegisterSystem(std::string name, int priority) {
+void Registry::RegisterSystem(std::string name, int priority) {
     system_desc new_desc = {
         .name = name,
         .priority = priority,
         .system = std::make_unique<T>()
     };
     m_systems.push_back(std::move(new_desc));
+}
+
 }
 
 #endif

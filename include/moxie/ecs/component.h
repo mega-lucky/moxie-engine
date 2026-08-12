@@ -4,14 +4,16 @@
 #include "./types.h"
 #include <stdexcept>
 
+namespace World {
+
 template<typename T>
-World::ComponentPool<T>::ComponentPool(size_t max_entities) {
+Registry::ComponentPool<T>::ComponentPool(size_t max_entities) {
     m_data.reserve(max_entities);
     m_entities.reserve(max_entities);
     m_sparse.resize(max_entities, -1);
 }
 template<typename T>
-void World::ComponentPool<T>::Add(Entity entity) {
+void Registry::ComponentPool<T>::Add(Entity entity) {
     if (Has(entity)) { return; }
 
     m_sparse[entity] = static_cast<int32_t>(m_data.size());
@@ -19,7 +21,7 @@ void World::ComponentPool<T>::Add(Entity entity) {
     m_entities.push_back(entity);
 }
 template<typename T>
-void World::ComponentPool<T>::Remove(Entity entity) {
+void Registry::ComponentPool<T>::Remove(Entity entity) {
     if (!Has(entity)) { return; }
 
     Entity last_entity = m_entities.back();
@@ -32,17 +34,19 @@ void World::ComponentPool<T>::Remove(Entity entity) {
     m_sparse[entity] = -1;
 }
 template<typename T>
-bool World::ComponentPool<T>::Has(Entity entity) {
+bool Registry::ComponentPool<T>::Has(Entity entity) {
     return m_sparse[entity] != -1;
 }
 template<typename T>
-T& World::ComponentPool<T>::Get(Entity entity){
+T& Registry::ComponentPool<T>::Get(Entity entity){
     if (!Has(entity)) {
         throw std::runtime_error("Entity has no such component");
     }
 
     int32_t index = m_sparse[entity];
     return m_data[index];
+}
+
 }
 
 #endif

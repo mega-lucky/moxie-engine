@@ -37,7 +37,7 @@ void World::GiveComponent(Entity entity) {
     if (EntityHasComponent<T>(entity)) { return; }
 
     ComponentID id = GetComponentID<T>();
-    Signature &entity_sig = m_signatures[entity];
+    Signature &entity_sig = m_signatures[m_index_array[entity]];
     entity_sig.set(id, true);
     
     m_components.at(id)->Add(entity);
@@ -48,7 +48,7 @@ void World::RemoveComponent(Entity entity) {
     if (!EntityHasComponent<T>(entity)) { return; }
 
     ComponentID id = GetComponentID<T>();
-    Signature &entity_sig = m_signatures[entity];
+    Signature &entity_sig = m_signatures[m_index_array[entity]];
     entity_sig.set(id, false);
     
     m_components.at(id)->Remove(entity);

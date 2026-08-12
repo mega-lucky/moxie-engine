@@ -29,6 +29,8 @@ private:
 
     std::vector<Signature> m_signatures;
     std::vector<Entity> m_entities;
+    std::vector<Entity> m_entity_queue;
+    std::vector<int32_t> m_index_array;
     std::vector<std::unique_ptr<IComponentPool>> m_components;
     std::vector<system_desc> m_systems;
 

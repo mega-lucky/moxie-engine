@@ -2,6 +2,7 @@
 #define __ECS_COMPONENT__
 
 #include "./types.h"
+#include <stdexcept>
 
 template<typename T>
 World::ComponentPool<T>::ComponentPool(size_t max_entities) {
@@ -36,7 +37,11 @@ bool World::ComponentPool<T>::Has(Entity entity) {
 }
 template<typename T>
 T& World::ComponentPool<T>::Get(Entity entity){
-    size_t index = m_sparse[entity];
+    if (!Has(entity)) {
+        throw std::runtime_error("Entity has no such component");
+    }
+
+    int32_t index = m_sparse[entity];
     return m_data[index];
 }
 

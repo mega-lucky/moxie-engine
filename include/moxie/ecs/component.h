@@ -37,6 +37,17 @@ template<typename T>
 bool Registry::ComponentPool<T>::Has(Entity entity) {
     return m_sparse[entity] != -1;
 }
+
+template<typename T>
+size_t Registry::ComponentPool<T>::Size() {
+    return m_entities.size();
+}
+
+template<typename T>
+const std::vector<Entity>& Registry::ComponentPool<T>::Entities() {
+    return m_entities;
+}
+
 template<typename T>
 T& Registry::ComponentPool<T>::Get(Entity entity){
     if (!Has(entity)) {

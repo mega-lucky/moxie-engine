@@ -11,39 +11,37 @@ struct lua_State;
 
 namespace Script {
 
-struct ScriptContext {
-    World::Registry *WorldRegistry;
+enum class YieldCase {
+    None,
+    Time
+};
+struct YieldInfo {
+    enum YieldCase cond;
+    union {
+        struct {
+            double remaining;
+        };
+    } data;
+};
+
+struct ThreadInfo {
+    int ref;
+    YieldInfo yield;
 };
 
 class Scheduler {
 private:
-    enum class yield_cond {
-        none,
-        time
-    };
-    struct yield_info {
-        enum yield_cond cond;
-        union {
-            struct {
-                double remaining;
-            };
-        } data;
-    };
-
-    struct luau_script {
-        lua_State *thread;
-        yield_info yield;
-    };
-
-    lua_State *m_luau_thread;
-    std::vector<luau_script> m_scripts;
+    lua_State *m_mainthread;
+    std::vector<lua_State*> m_threads;
 
     std::string compile_source(std::string&);
+    void register_bytecode(std::string bytecode, std::string name);
+    void kill_thread(lua_State *thread);
+
 public:
     Scheduler();
     ~Scheduler();
     void LoadFile(std::filesystem::path);
-    void RegisterScriptContext(ScriptContext&&);
     void Resume(double dt);
     void RegisterWorld(World::Registry *world);
 };

@@ -8,7 +8,7 @@
 #include <iostream>
 #include <lua_bindings.h>
 
-std::string Script::Scheduler::compile_source(std::string &content) {
+std::string Script::Scheduler::compile_source(std::string& content) {
     size_t size;
 
     char *compiled = luau_compile(
@@ -27,36 +27,16 @@ std::string Script::Scheduler::compile_source(std::string &content) {
     return bytecode;
 }
 
-Script::Scheduler::Scheduler() : m_luau_thread(luaL_newstate()) {
-    lua_ref(m_luau_thread, LUA_REGISTRYINDEX);
-    luaL_openlibs(m_luau_thread);
-}
-Script::Scheduler::~Scheduler() {
-    lua_close(m_luau_thread);
-    m_luau_thread = nullptr;
-}
-
-void Script::Scheduler::LoadFile(std::filesystem::path path) {
-    std::ifstream file(path, std::ios::binary);
-    if (!file.is_open()) return;
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    std::string content = buffer.str();
-
-    size_t size = 0;
-
-    std::string bytecode = compile_source(content);
-    std::string name = path.filename().string();
-
-    lua_State *new_thread = lua_newthread(m_luau_thread);
-    lua_ref(new_thread, LUA_REGISTRYINDEX);
+void Script::Scheduler::register_bytecode(std::string bytecode, std::string name) {
+    lua_State *new_thread = lua_newthread(m_mainthread);
+    int ref = lua_ref(m_mainthread, -1);
+    lua_pop(m_mainthread, 1);
 
     int load_state = luau_load(
         new_thread,
-        ("@" + name).c_str(),
+        name.c_str(),
         bytecode.c_str(),
-        size,
+        bytecode.size(),
         0
     );
 
@@ -64,44 +44,103 @@ void Script::Scheduler::LoadFile(std::filesystem::path path) {
         const char *message = lua_tostring(new_thread, -1);
         throw std::runtime_error("Failed to load script " + name + ":\n\t" + message);
     }
+    
+    auto *thread_info = new Script::ThreadInfo;
+    thread_info->ref = ref;
+    lua_setthreaddata(new_thread, thread_info);
 
-    luau_script &container = m_scripts.emplace_back();
-    container.thread = new_thread;
+    m_threads.push_back(new_thread);
+}
+
+void Script::Scheduler::kill_thread(lua_State *thread) {
+    auto *thread_data = static_cast<ThreadInfo*>(
+        lua_getthreaddata(thread)
+    );
+
+    int ref = thread_data->ref;
+    lua_setthreaddata(thread, nullptr);
+    delete thread_data;
+
+    lua_unref(m_mainthread, ref);
+}
+
+Script::Scheduler::Scheduler() : m_mainthread(luaL_newstate()) {
+    luaL_openlibs(m_mainthread);
+    register_time_lib(m_mainthread);
+}
+Script::Scheduler::~Scheduler() {
+    lua_close(m_mainthread);
+    m_mainthread = nullptr;
+}
+
+void Script::Scheduler::LoadFile(std::filesystem::path path) {
+    std::ifstream file(path, std::ios::binary);
+    if (!file.is_open()) {
+        throw std::runtime_error("File not found.");
+    }
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string content = buffer.str();
+
+    std::string bytecode = compile_source(content);
+    std::string name = ("@" + path.filename().string());
+
+    register_bytecode(bytecode, name);
 }
 
 void Script::Scheduler::Resume(double dt) {
-    for (auto &script : m_scripts) {
-        int status = lua_status(script.thread);
+    for (size_t i = 0; i < m_threads.size(); ) {
+        auto& thread = m_threads[i];
+        bool resume = false;
+        auto *thread_data = static_cast<ThreadInfo*>(
+            lua_getthreaddata(thread)
+        );
+
+        int status = lua_status(thread);
         if (status == LUA_YIELD) {
-            yield_info &yield = script.yield;
+            auto &yield = thread_data->yield;
             switch (yield.cond) {
-                case yield_cond::time: {
+                case YieldCase::Time: {
                     yield.data.remaining -= dt;
-                    if (yield.data.remaining > 0.0) {
-                        continue;
+                    
+                    if (yield.data.remaining <= 0.0) {
+                        resume = true;
                     }
                     break;
+                }
+                default: {
+                    resume = false;
                 }
             }
         }
 
-        status = lua_resume(script.thread, nullptr, 0);
+        if (status == LUA_OK && lua_gettop(thread) > 0) {
+            resume = true;
+        }
 
-        if (status >= 2) {
-            const char *err_msg = lua_tostring(script.thread, -1);
-            std::cerr << "Luau Runtime Error:\n\t" << err_msg << std::endl;
+        if (resume) {
+            status = lua_resume(thread, nullptr, 0);
+
+            if (status >= 2) {
+                const char *err_msg = lua_tostring(thread, -1);
+                std::cerr << "Luau Runtime Error:\n\t" << err_msg << std::endl;
+            }
         }
 
         if (
-            status == LUA_OK && lua_gettop(script.thread) == 0 ||
+            status == LUA_OK && !resume ||
             status >= 2
         ) {
-            std::swap(script, m_scripts.back());
-            m_scripts.pop_back();
+            kill_thread(thread);
+            std::swap(thread, m_threads.back());
+            m_threads.pop_back();
+        } else {
+            i ++;
         }
     }
 }
 
 void Script::Scheduler::RegisterWorld(World::Registry *world) {
-    register_world(m_luau_thread, world);
+    register_world(m_mainthread, world);
 }

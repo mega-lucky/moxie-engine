@@ -5,5 +5,6 @@ struct lua_State;
 namespace World { class Registry; };
 
 int register_world(lua_State *L, World::Registry *world);
+void register_time_lib(lua_State *L);
 
 #endif

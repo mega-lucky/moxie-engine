@@ -28,6 +28,7 @@ std::string Script::Scheduler::compile_source(std::string &content) {
 }
 
 Script::Scheduler::Scheduler() : m_luau_thread(luaL_newstate()) {
+    lua_ref(m_luau_thread, LUA_REGISTRYINDEX);
     luaL_openlibs(m_luau_thread);
 }
 Script::Scheduler::~Scheduler() {
@@ -49,7 +50,7 @@ void Script::Scheduler::LoadFile(std::filesystem::path path) {
     std::string name = path.filename().string();
 
     lua_State *new_thread = lua_newthread(m_luau_thread);
-    lua_ref(m_luau_thread, LUA_REGISTRYINDEX);
+    lua_ref(new_thread, LUA_REGISTRYINDEX);
 
     int load_state = luau_load(
         new_thread,

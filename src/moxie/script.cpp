@@ -67,8 +67,6 @@ void Script::Scheduler::LoadFile(std::filesystem::path path) {
 
     luau_script &container = m_scripts.emplace_back();
     container.thread = new_thread;
-    container.yield.cond = yield_cond::time;
-    container.yield.data.remaining = 100.0;
 }
 
 void Script::Scheduler::Resume(double dt) {

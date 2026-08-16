@@ -34,9 +34,9 @@ Entity World::Registry::NewEntity() {
     return new_entity;
 }
 
-void World::Registry::Update() {
+void World::Registry::Update(double dt) {
     for (auto &sys_desc : m_systems) {
-        sys_desc.system->Update();
+        sys_desc.system->Update(dt);
     }
 }
 

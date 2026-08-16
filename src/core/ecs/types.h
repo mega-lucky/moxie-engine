@@ -46,7 +46,7 @@ public:
     Registry();
     Entity NewEntity();
     void DeleteEntity(Entity entity);
-    void Update();
+    void Update(double dt);
 
     template<typename T> bool EntityHasComponent(Entity entity);
     template<typename T> void RegisterComponent();
@@ -88,7 +88,7 @@ class IWorldSystem {
 public:
     const std::string Name;
     virtual ~IWorldSystem() = default;
-    virtual void Update() = 0;
+    virtual void Update(double dt) = 0;
 };
 
 }

@@ -54,10 +54,7 @@ public:
     template<typename T> void GiveComponent(Entity entity);
     template<typename T> void GiveComponent(Entity entity, const T& value);
     template<typename T> void RemoveComponent(Entity entity);
-    template<typename T> void RegisterSystem();
-    template<typename T> void RegisterSystem(std::string name);
-    template<typename T> void RegisterSystem(int priority);
-    template<typename T> void RegisterSystem(std::string name, int priority);
+    template<typename T, typename... arg_types> void RegisterSystem(arg_types&&... args);
     template<typename T> bool IsComponent();
     template<typename ...T> std::vector<Entity> NewQuery();
 };

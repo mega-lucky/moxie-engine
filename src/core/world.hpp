@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <format>
+#include <utility>
 #include "./ecs/types.h"
 #include "./ecs/component.h"
 
@@ -83,46 +84,15 @@ ComponentID Registry::get_component_id() {
     return id;
 }
 
-template<typename T>
-void Registry::RegisterSystem() {
+template<typename T, typename... arg_types>
+void Registry::RegisterSystem(arg_types&&... args) {
     system_desc new_desc = {
         .name = std::format("System {}", m_systems.size() + 1),
         .priority = 0,
-        .system = std::make_unique<T>()
+        .system = std::make_unique<T>(std::forward<arg_types>(args)...)
     };
     m_systems.push_back(std::move(new_desc));
 }
-
-template<typename T>
-void Registry::RegisterSystem(int priority) {
-    system_desc new_desc = {
-        .name = std::format("System {}", m_systems.size() + 1),
-        .priority = priority,
-        .system = std::make_unique<T>()
-    };
-    m_systems.push_back(std::move(new_desc));
-}
-
-template<typename T>
-void Registry::RegisterSystem(std::string name) {
-    system_desc new_desc = {
-        .name = name,
-        .priority = 0,
-        .system = std::make_unique<T>()
-    };
-    m_systems.push_back(std::move(new_desc));
-}
-
-template<typename T>
-void Registry::RegisterSystem(std::string name, int priority) {
-    system_desc new_desc = {
-        .name = name,
-        .priority = priority,
-        .system = std::make_unique<T>()
-    };
-    m_systems.push_back(std::move(new_desc));
-}
-
 
 template<typename T>
 World::Registry::ComponentPool<T>* World::Registry::get_pool() {

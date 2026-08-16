@@ -1,6 +1,6 @@
 #include <lua.h>
 #include <lualib.h>
-#include <moxie/script.h>
+#include <script.hpp>
 #include <iostream>
 
 

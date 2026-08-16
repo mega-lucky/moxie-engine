@@ -1,7 +1,7 @@
 #include <lua.h>
 #include <lualib.h>
 #include <iostream>
-#include <moxie/world.hpp>
+#include <world.hpp>
 #include <cstring>
 
 static World::Registry *g_world = nullptr;

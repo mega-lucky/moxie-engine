@@ -11,10 +11,11 @@ private:
 
 public:
     Time();
-    void Reset();
-    void Update();
-    double GetDeltaTime() const;
-    double GetTime() const;
+    void Reset() noexcept;
+    void Update() noexcept;
+    double GetDeltaTime() const noexcept;
+    double GetFrameTime() const noexcept;
+    double GetTime() const noexcept;
 };
 
 

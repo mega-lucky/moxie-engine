@@ -23,7 +23,7 @@ void Time::Update() noexcept {
 double Time::GetDeltaTime() const noexcept {
     return m_delta_time;
 }
-double Time::GetFrameTime() const noexcept {
+double Time::GetFPS() const noexcept {
     return m_delta_time == 0.0
         ? 0.0
         : 1.0/m_delta_time;

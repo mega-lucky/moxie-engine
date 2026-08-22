@@ -14,7 +14,7 @@ public:
     void Reset() noexcept;
     void Update() noexcept;
     double GetDeltaTime() const noexcept;
-    double GetFrameTime() const noexcept;
+    double GetFPS() const noexcept;
     double GetTime() const noexcept;
 };
 

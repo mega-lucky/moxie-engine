@@ -16,7 +16,7 @@ namespace World {
 
 class IWorldSystem;
 
-class Registry {
+class Registry final {
 private:
     size_t max_entities = 1024;
     size_t max_components = 128;
@@ -39,8 +39,9 @@ private:
     std::vector<system_desc> m_systems;
     std::bitset<128> m_component_registry;
 
-    ComponentID next_component_id();
-    template<typename T> ComponentID get_component_id();
+    ComponentID next_component_id() const;
+    template<typename T> ComponentID get_component_id() const noexcept;
+    template<typename T> const ComponentPool<T>* get_pool() const;
     template<typename T> ComponentPool<T>* get_pool();
 public:
     Registry();
@@ -48,14 +49,15 @@ public:
     void DeleteEntity(Entity entity);
     void Update(double dt);
 
-    template<typename T> bool EntityHasComponent(Entity entity);
+    template<typename T> bool EntityHasComponent(Entity entity) const noexcept;
     template<typename T> void RegisterComponent();
+    template<typename T> const T& GetComponent(Entity entity) const;
     template<typename T> T& GetComponent(Entity entity);
-    template<typename T> void GiveComponent(Entity entity);
     template<typename T> void GiveComponent(Entity entity, const T& value);
+    template<typename T> void GiveComponent(Entity entity, T&& value = T{});
     template<typename T> void RemoveComponent(Entity entity);
     template<typename T, typename... arg_types> void RegisterSystem(arg_types&&... args);
-    template<typename T> bool IsComponent();
+    template<typename T> bool IsComponent() const noexcept;
     template<typename ...T> std::vector<Entity> NewQuery();
 };
 
@@ -63,9 +65,9 @@ class Registry::IComponentPool {
 public:
     virtual ~IComponentPool() = default;
     virtual void Remove(Entity entity) = 0;
-    virtual bool Has(Entity entity) = 0;
-    virtual size_t Size() = 0;
-    virtual const std::vector<Entity>& Entities() = 0;
+    virtual bool Has(Entity entity) const = 0;
+    virtual size_t Size() const = 0;
+    virtual const std::vector<Entity>& Entities() const = 0;
 };
 
 template<typename T>
@@ -77,10 +79,12 @@ private:
 public:
     ComponentPool(size_t max_entities);
     void Add(Entity entity, const T& value);
+    void Add(Entity entity, T&& value);
     void Remove(Entity entity) override;
-    bool Has(Entity entity) override;
-    size_t Size() override;
-    const std::vector<Entity>& Entities() override;
+    bool Has(Entity entity) const override;
+    size_t Size() const override;
+    const std::vector<Entity>& Entities() const override;
+    const T& Get(Entity entity) const;
     T& Get(Entity entity);
 };
 

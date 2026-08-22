@@ -9,7 +9,7 @@ World::Registry::Registry() {
     m_entity_queue.reserve(max_entities);
 }
 
-ComponentID World::Registry::next_component_id() {
+ComponentID World::Registry::next_component_id() const {
     static ComponentID next = 0;
     return next ++;
 }

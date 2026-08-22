@@ -12,6 +12,9 @@ namespace World {
 
 template<typename T>
 void Registry::RegisterComponent() {
+    if (IsComponent<T>()) {
+        throw std::runtime_error("This type is already a component");
+    }
     ComponentID id = get_component_id<T>();
     m_component_registry.set(static_cast<size_t>(id), true);
 
@@ -23,14 +26,14 @@ void Registry::RegisterComponent() {
 }
 
 template<typename T>
-bool Registry::EntityHasComponent(Entity entity) {
+bool Registry::EntityHasComponent(Entity entity) const noexcept {
     ComponentID comp_id = get_component_id<T>();
-    Signature sig = m_signatures[entity];
+    Signature sig = m_signatures[m_index_array[entity]];
     return sig.test(comp_id);
 }
 
 template<typename T>
-T& Registry::GetComponent(Entity entity) {
+const T& Registry::GetComponent(Entity entity) const {
     if (!IsComponent<T>()) {
         throw std::runtime_error("GetComponent called on a type that isnt a component");
     }
@@ -42,20 +45,23 @@ T& Registry::GetComponent(Entity entity) {
 }
 
 template<typename T>
-bool Registry::IsComponent() {
+T& Registry::GetComponent(Entity entity) {
+    return const_cast<T&>(std::as_const(*this).GetComponent<T>(entity));
+}
+
+template<typename T>
+bool Registry::IsComponent() const noexcept {
     ComponentID id = get_component_id<T>();
 
     return m_component_registry.test(id);
 }
 
 template<typename T>
-void Registry::GiveComponent(Entity entity) {
-    T value;
-    Registry::GiveComponent(entity, value);
-}
-template<typename T>
 void Registry::GiveComponent(Entity entity, const T& value) {
-    if (EntityHasComponent<T>(entity)) { return; }
+    if (EntityHasComponent<T>(entity)) {
+        GetComponent<T>(entity) = value;
+        return;
+    }
 
     ComponentID id = get_component_id<T>();
     Signature &entity_sig = m_signatures[m_index_array[entity]];
@@ -65,6 +71,22 @@ void Registry::GiveComponent(Entity entity, const T& value) {
     auto *pool = static_cast<ComponentPool<T>*>(ipool);
 
     pool->Add(entity, value);
+}
+template<typename T>
+void Registry::GiveComponent(Entity entity, T&& value) {
+    if (EntityHasComponent<T>(entity)) {
+        GetComponent<T>(entity) = std::move(value);
+        return;
+    }
+
+    ComponentID id = get_component_id<T>();
+    Signature &entity_sig = m_signatures[m_index_array[entity]];
+    entity_sig.set(id, true);
+    
+    auto *ipool = m_components.at(id).get();
+    auto *pool = static_cast<ComponentPool<T>*>(ipool);
+
+    pool->Add(entity, std::move(value));
 }
 
 template<typename T>
@@ -79,7 +101,7 @@ void Registry::RemoveComponent(Entity entity) {
 }
 
 template<typename T>
-ComponentID Registry::get_component_id() {
+ComponentID Registry::get_component_id() const noexcept {
     static ComponentID id = next_component_id();
     return id;
 }
@@ -95,7 +117,7 @@ void Registry::RegisterSystem(arg_types&&... args) {
 }
 
 template<typename T>
-World::Registry::ComponentPool<T>* World::Registry::get_pool() {
+const Registry::ComponentPool<T>* Registry::get_pool() const {
     if (!IsComponent<T>()) {
         throw std::runtime_error("Specified type is not a registered component");
     }
@@ -104,8 +126,13 @@ World::Registry::ComponentPool<T>* World::Registry::get_pool() {
     return static_cast<ComponentPool<T>*>(m_components[id].get());
 }
 
+template<typename T>
+Registry::ComponentPool<T>* Registry::get_pool() {
+    return const_cast<Registry::ComponentPool<T>*>(std::as_const(*this).get_pool<T>());
+}
+
 template<typename ...Args>
-std::vector<Entity> World::Registry::NewQuery() {
+std::vector<Entity> Registry::NewQuery() {
     static_assert(sizeof...(Args) > 0, "Atleast 1 argument expected");
 
     std::array<IComponentPool*, sizeof...(Args)> relevant = {

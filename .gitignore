@@ -1,2 +1,7 @@
 build/
 .vscode/
+cache/
+Makefile
+CMakeCache.txt
+cmake_install.cmake
+CMakeFiles/

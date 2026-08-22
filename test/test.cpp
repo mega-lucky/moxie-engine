@@ -121,7 +121,6 @@ int main() {
     world.RegisterSystem<RenderSystem>(new_engine);
 
     while (!new_engine.MainWindow.ShouldClose()) {
-        std::cout << new_engine.Timer.GetFPS() << std::endl;
         transform &t = world.GetComponent<transform>(a);
         transform &t2 = world.GetComponent<transform>(b);
         glm_quat(t.rotation, new_engine.Timer.GetTime(), 1.0f, 1.0f, 0.0f);

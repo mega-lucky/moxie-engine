@@ -30,11 +30,6 @@ void init_drawcall_proccessor() {
     xinit_mesh(&text_mash, NULL, 0, NULL, 0, &text_layout);
 }
 
-extern material_data material;
-extern shader_data shader;
-extern texture_data texture;
-extern texture_data *texptr;
-
 void run_draw_call(const draw_call *call) {
     switch (call->type) {
         case mesh_drawcall: {

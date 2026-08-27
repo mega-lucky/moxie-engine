@@ -1,7 +1,6 @@
 #include <engine.hpp>
 #include <render_system.hpp>
 #include <cglm/quat.h>
-
 #include <iostream>
 
 GLuint gen_checkers(uint8_t c1[3], uint8_t c2[3]) {
@@ -29,9 +28,14 @@ int main() {
     World::Registry &world = new_engine.WorldRegistry;
     new_engine.MainWindow.Show();
 
-    world.RegisterComponent<mesh_renderer>();
-    world.RegisterComponent<mesh_shape>();
-    world.RegisterComponent<transform>();
+    ComponentID MeshRender = world.RegisterComponent<mesh_renderer>();
+    ComponentID MeshShape = world.RegisterComponent<mesh_shape>();
+    ComponentID Transform = world.RegisterComponent<transform>();
+    world.StoreComponentID(MeshRender, "MeshRender");
+    world.StoreComponentID(MeshShape, "MeshShape");
+    world.StoreComponentID(Transform, "Transform");
+
+    world.RegisterSystem<RenderSystem>(new_engine);
 
     material_data material;
     shader_data shader;
@@ -97,34 +101,49 @@ int main() {
     upload_mesh(&mesh);
 
     Entity a = world.NewEntity();
-    world.GiveComponent<mesh_shape>(a, mesh);
-    world.GiveComponent<transform>(a, (transform){
+    world.GiveComponent<mesh_shape>(a, MeshShape, mesh);
+    world.GiveComponent(a, Transform, (transform){
         .position = {-1.0f,0.0f,-5.0f},
         .scale = {2.0f,2.0f,2.0f},
         .rotation = {0.0f,0.0f,0.0f,1.0f},
     });
-    world.GiveComponent<mesh_renderer>(a, (mesh_renderer){
+    world.GiveComponent(a, MeshRender, (mesh_renderer){
         .material = &material,
     });
 
     Entity b = world.NewEntity();
-    world.GiveComponent<mesh_shape>(b, mesh);
-    world.GiveComponent<transform>(b, (transform){
+    world.GiveComponent<mesh_shape>(b, MeshShape, mesh);
+    world.GiveComponent<transform>(b, Transform, (transform){
         .position = {1.0f,0.0f,-5.0f},
         .scale = {1.0f,1.0f,1.0f},
         .rotation = {0.0f,0.0f,0.0f,1.0f},
     });
-    world.GiveComponent<mesh_renderer>(b, (mesh_renderer){
+    world.GiveComponent<mesh_renderer>(b, MeshRender, (mesh_renderer){
         .material = &material,
     });
-
-    world.RegisterSystem<RenderSystem>(new_engine);
+    
+    Entity c = world.NewEntity();
+    world.GiveComponent<mesh_shape>(c, MeshShape, mesh);
+    world.GiveComponent<transform>(c, Transform, (transform){
+        .position = {0.0f,-1.0f,-5.0f},
+        .scale = {1.0f,1.0f,1.0f},
+        .rotation = {0.0f,0.0f,0.0f,1.0f},
+    });
+    world.GiveComponent<mesh_renderer>(c, MeshRender, (mesh_renderer){
+        .material = &material,
+    });
+    
+    new_engine.ScriptSchuduler.LoadFile("test/test.luau");
+    new_engine.ScriptSchuduler.RegisterWorld(&new_engine.WorldRegistry);
 
     while (!new_engine.MainWindow.ShouldClose()) {
-        transform &t = world.GetComponent<transform>(a);
-        transform &t2 = world.GetComponent<transform>(b);
+        transform &t = world.GetComponent<transform>(a, Transform);
+        transform &t2 = world.GetComponent<transform>(b, Transform);
+        transform &t3 = world.GetComponent<transform>(c, Transform);
         glm_quat(t.rotation, new_engine.Timer.GetTime(), 1.0f, 1.0f, 0.0f);
         glm_quat(t2.rotation, new_engine.Timer.GetTime(), 1.0f, 0.0f, 0.0f);
+        glm_quat(t3.rotation, new_engine.Timer.GetTime(), 0.0f, 1.0f, 0.0f);
+        std::cout << new_engine.Timer.GetFPS() << std::endl;
         new_engine.Update();
     }
 

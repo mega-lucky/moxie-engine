@@ -10,9 +10,12 @@
 
 class RenderSystem : public World::IWorldSystem {
 private:
-    std::vector<Entity> mesh_query;
     std::vector<draw_call> draw_calls;
     World::Registry &world;
+
+    ComponentID MeshRender;
+    ComponentID MeshShape;
+    ComponentID Transform;
 public:
     RenderSystem(Engine &e);
     void Update(double dt) override;

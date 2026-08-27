@@ -6,7 +6,6 @@
 #include <vector>
 #include <memory>
 #include <functional>
-#include <type_traits>
 
 using Entity = uint32_t;
 using ComponentID = uint32_t;
@@ -14,16 +13,64 @@ using Signature = std::bitset<128>;
 
 namespace World {
 
-class IWorldSystem;
+struct ComponentDescription {
+    size_t block_size;
+    std::function<void(void*)> constructor;
+    std::function<void(void*)> destructor;
+    std::function<void(void*, const void*)> copy;
+    std::function<void(void*, void*)> move;
+};
+
+class ComponentPool {
+private:
+    ComponentDescription m_description;
+    std::vector<std::byte> m_data;
+    std::vector<Entity> m_entities;
+    std::vector<int32_t> m_sparse;
+public:
+    ComponentPool(const ComponentDescription &desc);
+    ComponentPool(ComponentDescription &&desc);
+
+    const void *Get(Entity entity) const;
+    void *Get(Entity entity);
+    template <typename T> const T& Get(Entity entity) const;
+    template <typename T> T& Get(Entity entity);
+
+    bool Has(Entity entity) const noexcept;
+
+    void Add(Entity entity, const void *data = nullptr);
+    template<typename T> void Add(Entity entity, const T& data);
+    template<typename T> void Add(Entity entity, T&& data);    
+
+    void Remove(Entity entity);
+
+    const std::vector<Entity> &Entities() const noexcept;
+};
+
+class Registry;
+class Query {
+private:
+    Signature m_signature;
+    const ComponentPool *m_pool;
+    const World::Registry *m_world;
+public:
+    Query(const Registry &reg, std::initializer_list<ComponentID> comp_ids);
+    void Each(const std::function<void(Entity)> &callback);
+    std::vector<Entity> Entities();
+};
+
+class IWorldSystem {
+public:
+    const std::string Name;
+    virtual ~IWorldSystem() = default;
+    virtual void Update(double dt) = 0;
+};
 
 class Registry final {
 private:
     size_t max_entities = 1024;
     size_t max_components = 128;
     size_t max_systems = 64;
-
-    class IComponentPool;
-    template<typename T> class ComponentPool;
 
     struct system_desc {
         std::string name;
@@ -35,65 +82,44 @@ private:
     std::vector<Entity> m_entities;
     std::vector<Entity> m_entity_queue;
     std::vector<int32_t> m_index_array;
-    std::vector<std::unique_ptr<IComponentPool>> m_components;
+    std::vector<ComponentPool> m_components;
     std::vector<system_desc> m_systems;
-    std::bitset<128> m_component_registry;
+    std::unordered_map<std::string, ComponentID> m_component_registry;
 
-    ComponentID next_component_id() const;
-    template<typename T> ComponentID get_component_id() const noexcept;
-    template<typename T> const ComponentPool<T>* get_pool() const;
-    template<typename T> ComponentPool<T>* get_pool();
+    friend Query::Query(const World::Registry &reg, std::initializer_list<ComponentID> comp_ids);
 public:
     Registry();
     Entity NewEntity();
     void DeleteEntity(Entity entity);
     void Update(double dt);
 
-    template<typename T> bool EntityHasComponent(Entity entity) const noexcept;
-    template<typename T> void RegisterComponent();
-    template<typename T> const T& GetComponent(Entity entity) const;
-    template<typename T> T& GetComponent(Entity entity);
-    template<typename T> void GiveComponent(Entity entity, const T& value);
-    template<typename T> void GiveComponent(Entity entity, T&& value = T{});
-    template<typename T> void RemoveComponent(Entity entity);
+    bool EntityHasComponent(Entity entity, ComponentID comp_id) const noexcept;
+    bool EntityMatchesSignature(Entity entity, Signature signature) const noexcept;
+    
+    ComponentID RegisterComponent(const ComponentDescription &desc); 
+    ComponentID RegisterComponent(ComponentDescription &&desc);
+    template<typename T> ComponentID RegisterComponent();
+
+    const void *GetComponent(Entity entity, ComponentID comp_id) const;
+    void *GetComponent(Entity entity, ComponentID comp_id);
+
+    template<typename T> const T& GetComponent(Entity entity, ComponentID comp_id) const;
+    template<typename T> T& GetComponent(Entity entity, ComponentID comp_id);
+
+    void GiveComponent(Entity entity, ComponentID comp_id, const void *value = nullptr);
+    template<typename T> void GiveComponent(Entity entity, ComponentID comp_id, const T& value);
+    template<typename T> void GiveComponent(Entity entity, ComponentID comp_id, T&& value = T{});
+
+    void RemoveComponent(Entity entity, ComponentID comp_id);
+
     template<typename T, typename... arg_types> void RegisterSystem(arg_types&&... args);
-    template<typename T> bool IsComponent() const noexcept;
+    bool IsComponent(ComponentID id) const noexcept;
     template<typename ...T> std::vector<Entity> NewQuery();
+
+    void StoreComponentID(ComponentID id, std::string name);
+    ComponentID GetComponentID(std::string name);
 };
 
-class Registry::IComponentPool {
-public:
-    virtual ~IComponentPool() = default;
-    virtual void Remove(Entity entity) = 0;
-    virtual bool Has(Entity entity) const = 0;
-    virtual size_t Size() const = 0;
-    virtual const std::vector<Entity>& Entities() const = 0;
-};
-
-template<typename T>
-class Registry::ComponentPool : public Registry::IComponentPool {
-private:
-    std::vector<T> m_data;
-    std::vector<int32_t> m_sparse;
-    std::vector<Entity> m_entities;
-public:
-    ComponentPool(size_t max_entities);
-    void Add(Entity entity, const T& value);
-    void Add(Entity entity, T&& value);
-    void Remove(Entity entity) override;
-    bool Has(Entity entity) const override;
-    size_t Size() const override;
-    const std::vector<Entity>& Entities() const override;
-    const T& Get(Entity entity) const;
-    T& Get(Entity entity);
-};
-
-class IWorldSystem {
-public:
-    const std::string Name;
-    virtual ~IWorldSystem() = default;
-    virtual void Update(double dt) = 0;
-};
 
 }
 

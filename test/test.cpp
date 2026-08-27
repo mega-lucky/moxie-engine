@@ -143,7 +143,6 @@ int main() {
         glm_quat(t.rotation, new_engine.Timer.GetTime(), 1.0f, 1.0f, 0.0f);
         glm_quat(t2.rotation, new_engine.Timer.GetTime(), 1.0f, 0.0f, 0.0f);
         glm_quat(t3.rotation, new_engine.Timer.GetTime(), 0.0f, 1.0f, 0.0f);
-        std::cout << new_engine.Timer.GetFPS() << std::endl;
         new_engine.Update();
     }
 

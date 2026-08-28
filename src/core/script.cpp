@@ -78,9 +78,11 @@ void Script::Scheduler::kill_thread(lua_State *thread) {
     lua_unref(m_mainthread, ref);
 }
 
-Script::Scheduler::Scheduler() : m_mainthread(luaL_newstate()) {
+Script::Scheduler::Scheduler(Engine &engine) : m_mainthread(luaL_newstate()) {
     luaL_openlibs(m_mainthread);
-    register_time_lib(m_mainthread);
+    register_time_lib(m_mainthread, engine.Timer);
+    register_world(m_mainthread, engine.WorldRegistry);
+    init_transform_meta(m_mainthread);
 }
 Script::Scheduler::~Scheduler() {
     lua_close(m_mainthread);
@@ -104,7 +106,7 @@ void Script::Scheduler::LoadFile(std::filesystem::path path) {
     load_bytecode(thread, bytecode, name);
 }
 
-void Script::Scheduler::Resume(double dt) {
+void Script::Scheduler::Resume(double time) {
     for (size_t i = 0; i < m_threads.size(); ) {
         auto& thread = m_threads[i];
         bool resume = false;
@@ -113,14 +115,16 @@ void Script::Scheduler::Resume(double dt) {
         );
 
         int status = lua_status(thread);
+        int n_args = 0;
+
         if (status == LUA_YIELD) {
             auto &yield = thread_data->yield;
             switch (yield.cond) {
                 case YieldCase::Time: {
-                    yield.data.remaining -= dt;
-                    
-                    if (yield.data.remaining <= 0.0) {
+                    if (time >= yield.data.time.start_time + yield.data.time.duration) {
                         resume = true;
+                        lua_pushnumber(thread, time - yield.data.time.start_time);
+                        n_args ++;
                     }
                     break;
                 }
@@ -135,7 +139,7 @@ void Script::Scheduler::Resume(double dt) {
         }
 
         if (resume) {
-            status = lua_resume(thread, nullptr, 0);
+            status = lua_resume(thread, nullptr, n_args);
 
             if (status >= 2) {
                 const char *err_msg = lua_tostring(thread, -1);
@@ -154,8 +158,4 @@ void Script::Scheduler::Resume(double dt) {
             i ++;
         }
     }
-}
-
-void Script::Scheduler::RegisterWorld(World::Registry *world) {
-    register_world(m_mainthread, world);
 }

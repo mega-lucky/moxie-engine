@@ -18,7 +18,8 @@ static int time_wait(lua_State *L) {
     auto& yield = thread_info->yield;
     
     yield.cond = Script::YieldCase::Time;
-    yield.data.remaining = time;
+    yield.data.time.duration = time;
+    yield.data.time.start_time = g_timer->GetTime();
 
     return lua_yield(L, 0);
 }
@@ -28,6 +29,7 @@ static const luaL_Reg time_lib[] = {
     {nullptr, nullptr}
 };
 
-void register_time_lib(lua_State *L) {
+void register_time_lib(lua_State *L, const Time &timer) {
+    g_timer = &timer;
     luaL_register(L, "time", time_lib);
 }

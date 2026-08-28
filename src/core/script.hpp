@@ -19,8 +19,9 @@ struct YieldInfo {
     enum YieldCase cond;
     union {
         struct {
-            double remaining;
-        };
+            double start_time;
+            double duration;
+        } time;
     } data;
 };
 
@@ -40,11 +41,10 @@ private:
     void register_thread();
     void kill_thread(lua_State *thread);
 public:
-    Scheduler();
+    Scheduler(Engine &engine);
     ~Scheduler();
     void LoadFile(std::filesystem::path);
     void Resume(double dt);
-    void RegisterWorld(World::Registry *world);
 };
 
 }

@@ -1,10 +1,11 @@
 #ifndef LUA_BINDINGS
 #define LUA_BINDINGS
 
-struct lua_State;
-namespace World { class Registry; };
+#include <engine.hpp>
 
-int register_world(lua_State *L, World::Registry *world);
-void register_time_lib(lua_State *L);
+struct lua_State;
+
+int register_world(lua_State *L, World::Registry &world);
+void register_time_lib(lua_State *L, const Time &timer);
 
 #endif

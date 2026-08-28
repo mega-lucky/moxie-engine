@@ -110,34 +110,34 @@ int main() {
 
     Entity a = world.NewEntity();
     world.GiveComponent<mesh_shape>(a, MeshShape, mesh);
-    world.GiveComponent(a, Transform, (transform){
+    world.GiveComponent(a, Transform, transform{
         .position = {-1.0f,0.0f,-5.0f},
         .scale = {2.0f,2.0f,2.0f},
         .rotation = {0.0f,0.0f,0.0f,1.0f},
     });
-    world.GiveComponent(a, MeshRender, (mesh_renderer){
+    world.GiveComponent(a, MeshRender, mesh_renderer{
         .material = &material,
     });
 
     Entity b = world.NewEntity();
     world.GiveComponent<mesh_shape>(b, MeshShape, mesh);
-    world.GiveComponent<transform>(b, Transform, (transform){
+    world.GiveComponent<transform>(b, Transform, transform{
         .position = {1.0f,0.0f,-5.0f},
         .scale = {1.0f,1.0f,1.0f},
         .rotation = {0.0f,0.0f,0.0f,1.0f},
     });
-    world.GiveComponent<mesh_renderer>(b, MeshRender, (mesh_renderer){
+    world.GiveComponent<mesh_renderer>(b, MeshRender, mesh_renderer{
         .material = &material,
     });
     
     Entity c = world.NewEntity();
     world.GiveComponent<mesh_shape>(c, MeshShape, mesh);
-    world.GiveComponent<transform>(c, Transform, (transform){
+    world.GiveComponent<transform>(c, Transform, transform{
         .position = {0.0f,-1.0f,-5.0f},
         .scale = {1.0f,1.0f,1.0f},
         .rotation = {0.0f,0.0f,0.0f,1.0f},
     });
-    world.GiveComponent<mesh_renderer>(c, MeshRender, (mesh_renderer){
+    world.GiveComponent<mesh_renderer>(c, MeshRender, mesh_renderer{
         .material = &material,
     });
     

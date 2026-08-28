@@ -150,7 +150,7 @@ void Script::Scheduler::Resume(double time) {
         }
 
         if (
-            status == LUA_OK && !resume ||
+            (status == LUA_OK && !resume) ||
             status >= 2
         ) {
             kill_thread(thread);

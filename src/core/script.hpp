@@ -5,9 +5,10 @@
 #include <filesystem>
 #include <vector>
 #include <variant>
-#include "./world.hpp"
+#include <world.hpp>
 
 struct lua_State;
+class Engine;
 
 namespace Script {
 

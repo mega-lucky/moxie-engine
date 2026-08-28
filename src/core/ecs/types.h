@@ -11,15 +11,20 @@ using Entity = uint32_t;
 using ComponentID = uint32_t;
 using Signature = std::bitset<128>;
 
+struct lua_State;
+
 namespace World {
 
-struct ComponentDescription {
+    struct ComponentDescription {
     size_t block_size;
     std::function<void(void*)> constructor;
     std::function<void(void*)> destructor;
     std::function<void(void*, const void*)> copy;
     std::function<void(void*, void*)> move;
+    std::function<int(void*, lua_State*)> to_luau;
 };
+
+class Registry;
 
 class ComponentPool {
 private:
@@ -27,6 +32,8 @@ private:
     std::vector<std::byte> m_data;
     std::vector<Entity> m_entities;
     std::vector<int32_t> m_sparse;
+
+    friend Registry;
 public:
     ComponentPool(const ComponentDescription &desc);
     ComponentPool(ComponentDescription &&desc);
@@ -47,7 +54,6 @@ public:
     const std::vector<Entity> &Entities() const noexcept;
 };
 
-class Registry;
 class Query {
 private:
     Signature m_signature;
@@ -98,10 +104,11 @@ public:
     
     ComponentID RegisterComponent(const ComponentDescription &desc); 
     ComponentID RegisterComponent(ComponentDescription &&desc);
-    template<typename T> ComponentID RegisterComponent();
+    template<typename T> ComponentID RegisterComponent(const std::function<int(void*,lua_State*)> &to_luau = [](void*,lua_State*){return 0;});
 
     const void *GetComponent(Entity entity, ComponentID comp_id) const;
     void *GetComponent(Entity entity, ComponentID comp_id);
+    int GetComponent(Entity entity, ComponentID comp_id, lua_State *L);
 
     template<typename T> const T& GetComponent(Entity entity, ComponentID comp_id) const;
     template<typename T> T& GetComponent(Entity entity, ComponentID comp_id);

@@ -86,6 +86,11 @@ void *World::Registry::GetComponent(Entity entity, ComponentID comp_id) {
     return m_components[comp_id].Get(entity);
 }
 
+int World::Registry::GetComponent(Entity entity, ComponentID comp_id, lua_State *L) {
+    void *comp_ptr = GetComponent(entity, comp_id);
+    return m_components[comp_id].m_description.to_luau(comp_ptr, L);
+}
+
 bool World::Registry::IsComponent(ComponentID id) const noexcept {
     return id < m_components.size();
 }

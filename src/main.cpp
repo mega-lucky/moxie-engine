@@ -2,6 +2,8 @@
 #include <render_system.hpp>
 #include <cglm/quat.h>
 #include <iostream>
+#include <lua.h>
+#include <lualib.h>
 
 GLuint gen_checkers(uint8_t c1[3], uint8_t c2[3]) {
     uint8_t buffer[2 * 2 * 3] = {
@@ -30,7 +32,13 @@ int main() {
 
     ComponentID MeshRender = world.RegisterComponent<mesh_renderer>();
     ComponentID MeshShape = world.RegisterComponent<mesh_shape>();
-    ComponentID Transform = world.RegisterComponent<transform>();
+    ComponentID Transform = world.RegisterComponent<transform>([](void *ptr, lua_State *L){
+        auto **ud = static_cast<transform**>(lua_newuserdata(L, sizeof(sizeof(transform*))));
+        *ud = static_cast<transform*>(ptr);
+        luaL_getmetatable(L, "Transform");
+        lua_setmetatable(L, -2);
+        return 1;
+    });
     world.StoreComponentID(MeshRender, "MeshRender");
     world.StoreComponentID(MeshShape, "MeshShape");
     world.StoreComponentID(Transform, "Transform");

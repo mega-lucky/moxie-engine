@@ -13,19 +13,27 @@ static int world_new_entity_luau(lua_State *L) {
 }
 
 static int world_del_entity_luau(lua_State *L) {
-    auto entity = static_cast<Entity>(lua_tointeger(L, 1));
+    auto entity = static_cast<Entity>(luaL_checkinteger(L, 1));
     g_world->DeleteEntity(entity);
     return 0;
+}
+
+static int world_get_component(lua_State *L) {
+    auto entity = static_cast<Entity>(luaL_checkinteger(L, 1));
+    auto comp_id = static_cast<ComponentID>(luaL_checkinteger(L, 2));
+
+    return g_world->GetComponent(entity, comp_id, L);
 }
 
 static luaL_Reg world_lib[] = {
     {"NewEntity", world_new_entity_luau},
     {"DeleteEntity", world_del_entity_luau},
+    {"GetComponent", world_get_component},
     {nullptr, nullptr}
 };
 
-int register_world(lua_State *L, World::Registry *world) {
-    g_world = world;
+int register_world(lua_State *L, World::Registry &world) {
+    g_world = &world;
     lua_newtable(L);
     
     for (auto &reg : world_lib) {

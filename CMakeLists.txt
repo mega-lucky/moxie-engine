@@ -1,113 +1,21 @@
 cmake_minimum_required(VERSION 3.23)
-project(MoxieEngine)
+project(MoxieEngine LANGUAGES C CXX)
 
-include(FetchContent)
-set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
-set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+include(cmake/FetchContent.cmake)
 
-set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/cache/_deps" CACHE PATH "Custom FetchContent directory" FORCE)
 
-# add_library(asan_flags INTERFACE)
-# target_compile_options(asan_flags INTERFACE -fsanitize=address -fno-omit-frame-pointer)
-# target_link_options(asan_flags INTERFACE -fsanitize=address)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Setting build type to 'Release' as none was specified.")
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
 
-FetchContent_Declare(
-    freetype
-    GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype
-    GIT_TAG VER-2-14-3
-    FIND_PACKAGE_ARGS
-)
-FetchContent_Declare(
-    glfw3
-    GIT_REPOSITORY https://github.com/glfw/glfw
-    GIT_TAG 3.4
-    FIND_PACKAGE_ARGS
-)
-FetchContent_Declare(
-    googlebenchmark
-    GIT_REPOSITORY https://github.com/google/benchmark.git
-    GIT_TAG v1.9.5
-    FIND_PACKAGE_ARGS
-)
-FetchContent_Declare(
-    cglm
-    GIT_REPOSITORY https://github.com/recp/cglm.git
-    GIT_TAG v0.9.6
-    FIND_PACKAGE_ARGS
-)
-FetchContent_Declare(
-    glm
-    GIT_REPOSITORY https://github.com/g-truc/glm.git
-    GIT_TAG 1.0.3
-    FIND_PACKAGE_ARGS
-)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
-FetchContent_MakeAvailable(freetype)
-FetchContent_MakeAvailable(glfw3)
-FetchContent_MakeAvailable(cglm)
-FetchContent_MakeAvailable(glm)
-FetchContent_MakeAvailable(googlebenchmark)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-add_library(glad OBJECT
-    vendor/glad/src/glad.c
-)
-target_include_directories(glad
-    PUBLIC vendor/glad/include
-)
-add_library(lua_bindings OBJECT
-    src/bindings/world_lua.cpp
-    src/bindings/time_lua.cpp
-)
-target_include_directories(lua_bindings
-    PRIVATE
-        src/core
-    PUBLIC
-        src/bindings
-        src/bindings/lua_headers
-)
-target_link_directories(lua_bindings PUBLIC lib)
-target_link_libraries(lua_bindings PUBLIC
-    luauvm
-    luaucompiler
-    luaubytecode
-    luauast
-    luaucommon
-    # asan_flags
-)
-add_library(core OBJECT
-    src/core/engine.cpp
-    src/core/script.cpp
-    src/core/time.cpp
-    src/core/window.cpp
-    src/core/world.cpp
-)
-target_include_directories(core
-    PUBLIC src/core
-)
-target_link_libraries(core PUBLIC
-    glad
-    glfw
-    lua_bindings
-    # asan_flags
-)
-add_library(systems INTERFACE)
-add_library(render_system OBJECT)
-target_link_libraries(systems INTERFACE render_system)
-target_sources(render_system # line 89
-    PRIVATE
-        src/systems/render/mesh.cpp
-        src/systems/render/process_calls.c
-        src/systems/render/render_system.cpp
-        src/systems/render/shader.cpp
-    PUBLIC FILE_SET HEADERS
-        BASE_DIRS src/systems/render
-        FILES
-            src/systems/render/mesh.h
-            src/systems/render/process_calls.h
-            src/systems/render/render_system.hpp
-            src/systems/render/shader.h
-)
-target_link_libraries(render_system PRIVATE glad cglm glm core)
-add_executable(moxie-engine test/test.cpp)
-target_link_libraries(moxie-engine PRIVATE core lua_bindings glad freetype cglm glm systems render_system)
-target_compile_options(moxie-engine PRIVATE -std=c++23 -g)
+add_subdirectory(vendor)
+add_subdirectory(src)

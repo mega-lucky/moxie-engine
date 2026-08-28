@@ -100,7 +100,7 @@ void upload_mesh(const mesh_shape *mesh) {
 }
 
 void destroy_mesh(mesh_shape *data) {
-    ::operator delete[](data->vertex_data);
+    ::operator delete(data->vertex_data);
     data->vertex_data = nullptr;
     data->n_vertices = 0;
 

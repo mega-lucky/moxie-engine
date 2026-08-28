@@ -1,11 +1,15 @@
 #include <lua.h>
 #include <lualib.h>
 #include <script.hpp>
+#include <time.hpp>
 #include <iostream>
 
+static const Time *g_timer = nullptr;
 
 static int time_wait(lua_State *L) {
-    double time = luaL_checknumber(L, 1);
+    double time = lua_gettop(L) > 0
+        ? luaL_checknumber(L, 1)
+        : 0.0;
 
     auto *thread_info = static_cast<Script::ThreadInfo*>(
         lua_getthreaddata(L)

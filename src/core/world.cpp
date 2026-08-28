@@ -70,6 +70,22 @@ void World::Registry::GiveComponent(Entity entity, ComponentID comp_id, const vo
     m_components[comp_id].Add(entity, value);
 }
 
+const void *World::Registry::GetComponent(Entity entity, ComponentID comp_id) const {
+    if (!IsComponent(comp_id)) {
+        throw std::runtime_error("Invalid Component ID");
+    }
+
+    return m_components[comp_id].Get(entity);
+}
+
+void *World::Registry::GetComponent(Entity entity, ComponentID comp_id) {
+    if (!IsComponent(comp_id)) {
+        throw std::runtime_error("Invalid Component ID");
+    }
+
+    return m_components[comp_id].Get(entity);
+}
+
 bool World::Registry::IsComponent(ComponentID id) const noexcept {
     return id < m_components.size();
 }

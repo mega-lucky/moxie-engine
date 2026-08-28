@@ -49,12 +49,15 @@ void init_transform_meta(lua_State *L) {
             std::copy(vec, vec + 3, (*t)->scale);
             return 0;
         } else if (strcmp(k, "Rotation") == 0) {
-            lua_createtable(L, 4, 0);
-            for (int i = 0; i < 4; i ++) {
-                lua_pushnumber(L, (*t)->rotation[i]);
-                lua_rawseti(L, -2, i+1);
+            int arg_type = lua_type(L, 3);
+            if (arg_type != LUA_TTABLE) {
+                luaL_error(L, "Table expected, got %s instead", lua_typename(L, arg_type));
             }
-            return 1;
+            for (int i = 0; i < 4; i ++) {
+                lua_rawgeti(L, 3, i+1);
+                (*t)->rotation[i] = luaL_checknumber(L, -1);
+            }
+            return 0;
         }
 
         return 0;

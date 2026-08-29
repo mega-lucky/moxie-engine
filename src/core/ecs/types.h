@@ -21,7 +21,6 @@ namespace World {
     std::function<void(void*)> destructor;
     std::function<void(void*, const void*)> copy;
     std::function<void(void*, void*)> move;
-    std::function<int(void*, lua_State*)> to_luau;
 };
 
 class Registry;
@@ -104,11 +103,10 @@ public:
     
     ComponentID RegisterComponent(const ComponentDescription &desc); 
     ComponentID RegisterComponent(ComponentDescription &&desc);
-    template<typename T> ComponentID RegisterComponent(const std::function<int(void*,lua_State*)> &to_luau = [](void*,lua_State*){return 0;});
+    template<typename T> ComponentID RegisterComponent();
 
     const void *GetComponent(Entity entity, ComponentID comp_id) const;
     void *GetComponent(Entity entity, ComponentID comp_id);
-    int GetComponent(Entity entity, ComponentID comp_id, lua_State *L);
 
     template<typename T> const T& GetComponent(Entity entity, ComponentID comp_id) const;
     template<typename T> T& GetComponent(Entity entity, ComponentID comp_id);
@@ -125,6 +123,11 @@ public:
 
     void StoreComponentID(ComponentID id, std::string name);
     ComponentID GetComponentID(std::string name);
+};
+
+struct ComponentHandle {
+    Entity entity;
+    ComponentID comp_id;
 };
 
 

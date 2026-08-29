@@ -30,18 +30,12 @@ int main() {
     World::Registry &world = new_engine.WorldRegistry;
     new_engine.MainWindow.Show();
 
-    ComponentID MeshRender = world.RegisterComponent<mesh_renderer>();
+    ComponentID Transform = world.RegisterComponent<transform>();
     ComponentID MeshShape = world.RegisterComponent<mesh_shape>();
-    ComponentID Transform = world.RegisterComponent<transform>([](void *ptr, lua_State *L){
-        auto **ud = static_cast<transform**>(lua_newuserdata(L, sizeof(sizeof(transform*))));
-        *ud = static_cast<transform*>(ptr);
-        luaL_getmetatable(L, "Transform");
-        lua_setmetatable(L, -2);
-        return 1;
-    });
-    world.StoreComponentID(MeshRender, "MeshRender");
-    world.StoreComponentID(MeshShape, "MeshShape");
+    ComponentID MeshRender = world.RegisterComponent<mesh_renderer>();
     world.StoreComponentID(Transform, "Transform");
+    world.StoreComponentID(MeshShape, "MeshShape");
+    world.StoreComponentID(MeshRender, "MeshRender");
 
     world.RegisterSystem<RenderSystem>(new_engine);
 
@@ -150,7 +144,7 @@ int main() {
         // glm_quat(t.rotation, new_engine.Timer.GetTime(), 1.0f, 1.0f, 0.0f);
         glm_quat(t2.rotation, new_engine.Timer.GetTime(), 1.0f, 0.0f, 0.0f);
         glm_quat(t3.rotation, -5.0 * new_engine.Timer.GetTime(), 0.0f, 1.0f, 0.0f);
-        std::cout << new_engine.Timer.GetFPS() << std::endl;
+        // std::cout << new_engine.Timer.GetFPS() << std::endl;
         new_engine.Update();
     }
 

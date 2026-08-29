@@ -23,7 +23,16 @@ static int world_get_component(lua_State *L) {
     auto entity = static_cast<Entity>(luaL_checkinteger(L, 1));
     auto comp_id = static_cast<ComponentID>(luaL_checkinteger(L, 2));
 
-    return g_world->GetComponent(entity, comp_id, L);
+    auto *userdata = static_cast<World::ComponentHandle*>(lua_newuserdatataggedwithmetatable(
+        L,
+        sizeof(World::ComponentHandle),
+        static_cast<int>(GetComponentTag(comp_id))
+    ));
+
+    userdata->entity = entity;
+    userdata->comp_id = comp_id;
+
+    return 1;
 }
 
 static luaL_Reg world_lib[] = {

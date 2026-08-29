@@ -11,7 +11,7 @@
 namespace World {
 
 template<typename T>
-ComponentID Registry::RegisterComponent(const std::function<int(void*,lua_State*)> &to_luau) {
+ComponentID Registry::RegisterComponent() {
     auto id = static_cast<ComponentID>(m_components.size());
     m_components.emplace_back(ComponentDescription{
         .block_size = sizeof(T),
@@ -26,7 +26,6 @@ ComponentID Registry::RegisterComponent(const std::function<int(void*,lua_State*
         .move = [](void *dest, void *source){
             new (dest) T(std::move(*reinterpret_cast<T*>(source)));
         },
-        .to_luau = to_luau
     });
     return id;
 }

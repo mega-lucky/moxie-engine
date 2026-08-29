@@ -34,6 +34,10 @@ void run_draw_call(const draw_call *call) {
     switch (call->type) {
         case mesh_drawcall: {
             glBindVertexArray(call->mesh.mesh->VAO);
+            if (!call->mesh.material || !call->mesh.mesh) {
+                return;
+            }
+
             shader_data *shader = call->mesh.material->shader;
             texture_data *texture = call->mesh.material->textures[0];
             const float *model = call->mesh.model;
@@ -75,7 +79,7 @@ void run_draw_call(const draw_call *call) {
             float y = call->text.y;
 
             for (size_t i = 0; i < call->text.content_len; i++) {
-                char c = call->text.content[i];
+               unsigned char c = call->text.content[i];
                 if (c < 32 || c > 127) { c = 127; } // del
 
                 font_face *font = call->text.font;

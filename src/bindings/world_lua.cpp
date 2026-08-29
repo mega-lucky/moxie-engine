@@ -35,10 +35,20 @@ static int world_get_component(lua_State *L) {
     return 1;
 }
 
+static int world_get_component_id(lua_State *L) {
+    const char *name = luaL_checkstring(L, 1);
+    
+    auto *engine = static_cast<Engine*>(lua_getthreaddata(lua_mainthread(L)));
+    lua_pushinteger(L, engine->WorldRegistry.GetComponentID(name));
+
+    return 1;
+}
+
 static luaL_Reg world_lib[] = {
     {"NewEntity", world_new_entity_luau},
     {"DeleteEntity", world_del_entity_luau},
     {"GetComponent", world_get_component},
+    {"GetComponentID", world_get_component_id},
     {nullptr, nullptr}
 };
 

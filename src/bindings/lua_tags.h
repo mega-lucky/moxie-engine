@@ -6,7 +6,9 @@
 enum class UserdataTag : int {
     None = 0,
     ComponentBase,
-    TransformComponent
+    TransformComponent,
+    MeshShapeComponent,
+    MeshRenderComponent,
 };
 
 static constexpr UserdataTag GetComponentTag(ComponentID comp_id) {

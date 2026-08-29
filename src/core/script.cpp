@@ -81,10 +81,11 @@ void Script::Scheduler::kill_thread(lua_State *thread) {
 }
 
 Script::Scheduler::Scheduler(Engine &engine) : m_mainthread(luaL_newstate()) {
+    lua_setthreaddata(m_mainthread, &engine);
     luaL_openlibs(m_mainthread);
     register_time_lib(m_mainthread, engine.Timer);
     register_world(m_mainthread, engine.WorldRegistry);
-    init_transform_meta(m_mainthread);
+    register_meta(m_mainthread, transform_meta, UserdataTag::TransformComponent);
 }
 Script::Scheduler::~Scheduler() {
     lua_close(m_mainthread);

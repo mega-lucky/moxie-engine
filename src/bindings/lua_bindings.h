@@ -5,7 +5,7 @@
 
 struct lua_State;
 
-int register_world(lua_State *L, World::Registry &world);
-void register_time_lib(lua_State *L, const Time &timer);
+int register_world(lua_State *L);
+void register_time_lib(lua_State *L);
 
 #endif

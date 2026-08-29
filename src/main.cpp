@@ -44,8 +44,8 @@ int main() {
     texture_data texture;
     texture_data *texptr;
 
-    uint8_t c1[] = {0,0,255};
-    uint8_t c2[] = {0,255,0};
+    uint8_t c1[] = {0,0,0};
+    uint8_t c2[] = {255,0,255};
 
     texture.id = gen_checkers(c1, c2);
     texture.type = ALBEDO_TEXTURE;
@@ -102,49 +102,12 @@ int main() {
     init_mesh(&mesh, vertex_data, 24, index_data, 36);
     upload_mesh(&mesh);
 
-    Entity a = world.NewEntity();
-    world.GiveComponent<mesh_shape>(a, MeshShape, mesh);
-    world.GiveComponent(a, Transform, transform{
-        .position = {-1.0f,0.0f,-5.0f},
-        .scale = {2.0f,2.0f,2.0f},
-        .rotation = {0.0f,0.0f,0.0f,1.0f},
-    });
-    world.GiveComponent(a, MeshRender, mesh_renderer{
-        .material = &material,
-    });
-
-    Entity b = world.NewEntity();
-    world.GiveComponent<mesh_shape>(b, MeshShape, mesh);
-    world.GiveComponent<transform>(b, Transform, transform{
-        .position = {1.0f,0.0f,-5.0f},
-        .scale = {1.0f,1.0f,1.0f},
-        .rotation = {0.0f,0.0f,0.0f,1.0f},
-    });
-    world.GiveComponent<mesh_renderer>(b, MeshRender, mesh_renderer{
-        .material = &material,
-    });
-    
-    Entity c = world.NewEntity();
-    world.GiveComponent<mesh_shape>(c, MeshShape, mesh);
-    world.GiveComponent<transform>(c, Transform, transform{
-        .position = {0.0f,-1.0f,-5.0f},
-        .scale = {1.0f,1.0f,1.0f},
-        .rotation = {0.0f,0.0f,0.0f,1.0f},
-    });
-    world.GiveComponent<mesh_renderer>(c, MeshRender, mesh_renderer{
-        .material = &material,
-    });
+    new_engine.Assets.meshes.insert({"Cube", &mesh});
+    new_engine.Assets.materials.insert({"Checkers", &material});
     
     new_engine.ScriptSchuduler.LoadFile("test/test.luau");
 
     while (!new_engine.MainWindow.ShouldClose()) {
-        // transform &t = world.GetComponent<transform>(a, Transform);
-        transform &t2 = world.GetComponent<transform>(b, Transform);
-        transform &t3 = world.GetComponent<transform>(c, Transform);
-        // glm_quat(t.rotation, new_engine.Timer.GetTime(), 1.0f, 1.0f, 0.0f);
-        glm_quat(t2.rotation, new_engine.Timer.GetTime(), 1.0f, 0.0f, 0.0f);
-        glm_quat(t3.rotation, -5.0 * new_engine.Timer.GetTime(), 0.0f, 1.0f, 0.0f);
-        // std::cout << new_engine.Timer.GetFPS() << std::endl;
         new_engine.Update();
     }
 

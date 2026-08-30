@@ -85,7 +85,7 @@ void upload_mesh(const mesh_shape *mesh) {
         GL_STATIC_DRAW
     );
 
-    for (size_t i = 0; i < mesh->layout.n_attribs; i ++) {
+    for (int i = 0; i < mesh->layout.n_attribs; i ++) {
         vert_attrib_data &attrib = mesh->layout.attribs[i];
 
         glVertexAttribPointer(i,
@@ -108,7 +108,11 @@ void destroy_mesh(mesh_shape *data) {
     data->index_data = nullptr;
     data->n_indices = 0;
 
-    data->layout = {0};
+    data->layout = {
+        .attribs = nullptr,
+        .n_attribs = 0,
+        .stride = 0
+    };
 
     glDeleteVertexArrays(1, &data->VAO);
     glDeleteBuffers(1, &data->VBO);

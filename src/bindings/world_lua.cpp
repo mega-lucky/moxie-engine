@@ -54,12 +54,45 @@ static int world_give_component(lua_State *L) {
     return 0;
 }
 
+static int world_query(lua_State *L) {
+    int n_args = lua_gettop(L);
+    if (n_args < 1) {
+        luaL_error(L, "Expected component ID(s)");
+    }
+
+    auto *engine = static_cast<Engine*>(lua_getthreaddata(lua_mainthread(L)));
+    auto &world = engine->WorldRegistry;
+
+    Signature query_sig;
+
+    while (n_args > 0) {
+        auto comp_id = static_cast<ComponentID>(luaL_checkinteger(L, -1));
+        if (!world.IsComponent(comp_id)) {
+            luaL_error(L, "Argument #%d is not a valid component id", n_args);
+        }
+
+        query_sig.set(comp_id, true);
+        n_args --;
+    }
+
+    auto *userdata = static_cast<Signature*>(lua_newuserdatataggedwithmetatable(
+        L,
+        sizeof(Signature),
+        static_cast<int>(UserdataTag::WorldQuery)
+    ));
+    
+    *userdata = query_sig;
+
+    return 1;
+}
+
 static luaL_Reg world_lib[] = {
     {"NewEntity", world_new_entity_luau},
     {"DeleteEntity", world_del_entity_luau},
     {"GetComponent", world_get_component},
     {"GetComponentID", world_get_component_id},
     {"GiveComponent", world_give_component},
+    {"Query", world_query},
     {nullptr, nullptr}
 };
 

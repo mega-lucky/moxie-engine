@@ -4,6 +4,7 @@ add_library(lua_bindings OBJECT
     meta/transform_meta.cpp
     meta/meshshape_meta.cpp
     meta/meshrender_meta.cpp
+    meta/worldquery_meta.cpp
 )
 target_include_directories(lua_bindings
     PRIVATE

@@ -14,5 +14,6 @@ inline void register_meta(lua_State *L, LuauMetaFN push_meta, UserdataTag tag) {
 void transform_meta(lua_State *L);
 void meshshape_meta(lua_State *L);
 void meshrender_meta(lua_State *L);
+void worldquery_meta(lua_State *L);
 
 #endif

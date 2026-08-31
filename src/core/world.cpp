@@ -227,6 +227,25 @@ const std::vector<Entity> &World::ComponentPool::Entities() const noexcept {
     return m_entities;
 }
 
+World::Query::Query(const World::Registry &reg, const Signature &comp_mask) :
+    m_pool(nullptr),
+    m_world(&reg),
+    m_signature(comp_mask)
+{
+    for (ComponentID id = 0; id < reg.m_components.size(); id ++) {
+        if (!comp_mask.test(id)) { continue; }
+
+        if (!reg.IsComponent(id)) {
+            throw std::runtime_error("Invalid Component ID");
+        }
+
+        const ComponentPool &pool = reg.m_components[id];
+        
+        if (m_pool == nullptr || pool.Entities().size() < m_pool->Entities().size()) {
+            m_pool = &pool;
+        }
+    }
+}
 
 World::Query::Query(const World::Registry &reg, std::initializer_list<ComponentID> comp_ids) :
     m_pool(nullptr),

@@ -59,6 +59,7 @@ private:
     const ComponentPool *m_pool;
     const World::Registry *m_world;
 public:
+    Query(const Registry &reg, const Signature &comp_mask);
     Query(const Registry &reg, std::initializer_list<ComponentID> comp_ids);
     void Each(const std::function<void(Entity)> &callback);
     std::vector<Entity> Entities();
@@ -91,7 +92,7 @@ private:
     std::vector<system_desc> m_systems;
     std::unordered_map<std::string, ComponentID> m_component_registry;
 
-    friend Query::Query(const World::Registry &reg, std::initializer_list<ComponentID> comp_ids);
+    friend Query;
 public:
     Registry();
     Entity NewEntity();

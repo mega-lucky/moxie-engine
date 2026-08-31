@@ -5,6 +5,7 @@
 
 enum class UserdataTag : int {
     None = 0,
+    WorldQuery,
     ComponentBase,
     TransformComponent,
     MeshShapeComponent,

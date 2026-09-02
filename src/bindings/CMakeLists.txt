@@ -1,6 +1,7 @@
 add_library(lua_bindings OBJECT
     world_lua.cpp
     time_lua.cpp
+    inputs_lua.cpp
     meta/transform_meta.cpp
     meta/meshshape_meta.cpp
     meta/meshrender_meta.cpp

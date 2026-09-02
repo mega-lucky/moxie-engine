@@ -1,4 +1,5 @@
 --!nocheck
+--!optimize 2
 
 const Transform = World.GetComponentID("Transform")
 const MeshShape = World.GetComponentID("MeshShape")
@@ -11,19 +12,29 @@ World.GiveComponent(entity, MeshRender)
 
 World.GetComponent(entity, MeshShape).Mesh = "Cube"
 World.GetComponent(entity, MeshRender).Material = "Checkers"
-World.GetComponent(entity, Transform).Position = vector.create(0, 0, -8)
-World.GetComponent(entity, Transform).Scale = vector.create(1, 1, 1)
--- World.GetComponent(entity, Transform).Rotation = {0,0,0,1}
 
-local query = World.Query(Transform)
-local elapsed = 0
+const transform = World.GetComponent(entity, Transform);
+transform.Position = vector.create(0, 0, -8)
+transform.Scale = vector.create(1, 1, 1)
 
 while true do
     const dt = time.wait()
-    elapsed += dt
-
-    query:Each(function(e)
-        const t = World.GetComponent(entity, Transform)
-        t.Position = vector.create(1.5 * math.sin(math.tau * elapsed), 0, -8)
-    end)
+    if Input.IsKeyDown(Input.KeyInput.D) then
+        transform.Position += vector.create(5 * dt, 0, 0)
+    end
+    if Input.IsKeyDown(Input.KeyInput.A) then
+        transform.Position += vector.create(-5 * dt, 0, 0)
+    end
+    if Input.IsKeyDown(Input.KeyInput.W) then
+        transform.Position += vector.create(0, 5 * dt, 0)
+    end
+    if Input.IsKeyDown(Input.KeyInput.S) then
+        transform.Position += vector.create(0, -5 * dt, 0)
+    end
+    if Input.IsMouseButtonDown(Input.MouseInput.Left) then
+        transform.Scale += vector.one * dt * 5;
+    end
+    if Input.IsMouseButtonDown(Input.MouseInput.Right) then
+        transform.Scale -= vector.one * dt * 5;
+    end
 end

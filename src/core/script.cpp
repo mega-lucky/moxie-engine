@@ -91,6 +91,8 @@ Script::Scheduler::Scheduler(Engine &engine) : m_mainthread(luaL_newstate()) {
 
     register_time_lib(m_mainthread);
     register_world(m_mainthread);
+    register_inputs_lib(m_mainthread);
+
     register_meta(m_mainthread, transform_meta, UserdataTag::TransformComponent);
     register_meta(m_mainthread, meshshape_meta, UserdataTag::MeshShapeComponent);
     register_meta(m_mainthread, meshrender_meta, UserdataTag::MeshRenderComponent);

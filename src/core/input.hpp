@@ -3,59 +3,49 @@
 
 struct GLFWwindow;
 
+#define KEY_BUTTONS_MACRO \
+    X(A) X(B) X(C) X(D) X(E) X(F) X(G) X(H) X(I) X(J) X(K) X(L) X(M) \
+    X(N) X(O) X(P) X(Q) X(R) X(S) X(T) X(U) X(V) X(W) X(X) X(Y) X(Z) \
+    X(Num0) X(Num1) X(Num2) X(Num3) X(Num4) X(Num5) X(Num6) X(Num7) X(Num8) X(Num9) \
+    X(Escape) X(Enter) X(Space) X(Tab) X(Backspace) X(Insert) X(Delete) \
+    X(Right) X(Left) X(Down) X(Up) X(PageUp) X(PageDown) X(Home) X(End) \
+    X(CapsLock) X(ScrollLock) X(NumLock) X(PrintScreen) X(Pause) \
+    X(F1) X(F2) X(F3) X(F4) X(F5) X(F6) X(F7) X(F8) X(F9) X(F10) X(F11) X(F12) \
+    X(LeftShift) X(LeftControl) X(LeftAlt) X(LeftSuper) \
+    X(RightShift) X(RightControl) X(RightAlt) X(RightSuper) \
+    X(Apostrophe) X(Comma) X(Minus) X(Period) X(Slash) X(Semicolon) \
+    X(Equal) X(LeftBracket) X(Backslash) X(RightBracket) X(GraveAccent) \
+    X(Kp0) X(Kp1) X(Kp2) X(Kp3) X(Kp4) X(Kp5) X(Kp6) X(Kp7) X(Kp8) X(Kp9) \
+    X(KpDecimal) X(KpDivide) X(KpMultiply) X(KpSubtract) X(KpAdd) X(KpEnter) X(KpEqual)
+
+#define MOUSE_BUTTONS_MACRO \
+    X(Left) \
+    X(Right) \
+    X(Middle) \
+    X(Button4) \
+    X(Button5) \
+    X(Button6) \
+    X(Button7) \
+    X(Button8)
+
 namespace Input {
 
 enum class KeyInput : int {
     Unknown = 0,
-    
-    A, B, C, D, E, F, G, H, I, J, K, L, M, 
-    N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
-    
-    Num0, Num1, Num2, Num3, Num4, Num5, Num6, Num7, Num8, Num9,
-    
-    Escape,
-    Enter,
-    Space,
-    Tab,
-    Backspace,
-    Insert,
-    Delete,
-    Right, Left, Down, Up,
-    PageUp, PageDown, Home, End,
-    CapsLock, ScrollLock, NumLock, PrintScreen, Pause,
-    
-    F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
-    
-    LeftShift, LeftControl, LeftAlt, LeftSuper,
-    
-    RightShift, RightControl, RightAlt, RightSuper,
-    
-    Apostrophe,
-    Comma,
-    Minus,
-    Period,
-    Slash,
-    Semicolon,   
-    Equal,       
-    LeftBracket, 
-    Backslash,    
-    RightBracket,
-    GraveAccent,
-    Kp0, Kp1, Kp2, Kp3, Kp4, Kp5, Kp6, Kp7, Kp8, Kp9,
-    KpDecimal, KpDivide, KpMultiply, KpSubtract, KpAdd, KpEnter, KpEqual,
+
+    #define X(n) n,
+    KEY_BUTTONS_MACRO
+    #undef X
 
     Count
 };
 
 enum class MouseInput : int {
-    Left = 0,
-    Right,
-    Middle,
-    Button4,
-    Button5,
-    Button6,
-    Button7,
-    Button8,
+    Unknown = 0,
+    
+    #define X(n) n,
+    MOUSE_BUTTONS_MACRO
+    #undef X
     
     Count
 };

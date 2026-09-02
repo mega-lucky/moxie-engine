@@ -1,5 +1,7 @@
 #include "./world.hpp"
+#include "ecs/types.h"
 #include <stdexcept>
+#include <new>
 
 World::Registry::Registry() {
     m_components.reserve(max_components);
@@ -141,18 +143,18 @@ ComponentID World::Registry::GetComponentID(std::string name) {
     return it->second;
 }
 
-World::ComponentPool::ComponentPool(const World::ComponentDescription &desc) : m_description(desc) {
-    m_data.reserve(desc.block_size * 8);
+World::ComponentPool::ComponentPool(const World::ComponentDescription &desc) :
+    m_data(byte_allocator(desc.alignment)),
+    m_stride((desc.data_size + desc.alignment - 1) & ~(desc.alignment - 1)),
+    constructor(desc.constructor),
+    destructor(desc.destructor),
+    copy(desc.copy),
+    move(desc.move)
+{
+    m_data.reserve(m_stride * 8);
     m_entities.reserve(8);
     m_sparse.resize(8, -1);
 }
-
-World::ComponentPool::ComponentPool(World::ComponentDescription &&desc) : m_description(std::move(desc)) {
-    m_data.reserve(desc.block_size * 8);
-    m_entities.reserve(8);
-    m_sparse.resize(8, -1);
-}
-
 bool World::ComponentPool::Has(Entity entity) const noexcept {
     if (m_sparse.size() <= entity) {
         return false;
@@ -166,7 +168,7 @@ const void *World::ComponentPool::Get(Entity entity) const {
     }
 
     int32_t index = m_sparse[entity];
-    size_t offset = m_description.block_size * index;
+    size_t offset = m_stride * index;
 
     return static_cast<const void *>(m_data.data() + offset);
 }
@@ -183,15 +185,15 @@ void World::ComponentPool::Add(Entity entity, const void *data) {
         m_sparse.resize(entity + 1, -1);
     }
     m_sparse[entity] = static_cast<int32_t>(m_entities.size());
-    size_t offset = m_entities.size() * m_description.block_size;
+    size_t offset = m_entities.size() * m_stride;
 
     m_entities.push_back(entity);
-    m_data.resize(m_data.size() + m_description.block_size);
+    m_data.resize(m_data.size() + m_stride);
 
     if (data == nullptr) {
-        m_description.constructor(m_data.data() + offset);
+        constructor(m_data.data() + offset);
     } else {
-        m_description.copy(m_data.data() + offset, data); 
+        copy(m_data.data() + offset, data); 
     }
 }
 
@@ -203,18 +205,18 @@ void World::ComponentPool::Remove(Entity entity) {
     int32_t index = m_sparse.at(entity);
     Entity back_entity = m_entities.back();
     int32_t back_index = m_sparse.at(back_entity);
-    size_t block_size = m_description.block_size;
+    size_t stride = m_stride;
 
-    m_description.destructor(m_data.data() + index * block_size);
+    destructor(m_data.data() + index * stride);
 
     if (index != back_index) {
         std::swap(m_entities[index], m_entities.back());
 
         m_sparse[back_entity] = index;
 
-        auto target_range_start = m_data.begin() + (index * block_size);
-        auto target_range_end   = target_range_start + block_size;
-        auto last_range_start   = m_data.begin() + (back_index * block_size);
+        auto target_range_start = m_data.begin() + (index * stride);
+        auto target_range_end   = target_range_start + stride;\
+        auto last_range_start   = m_data.begin() + (back_index * stride);
 
         std::swap_ranges(target_range_start, target_range_end, last_range_start);
     }

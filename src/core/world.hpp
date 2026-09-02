@@ -14,7 +14,8 @@ template<typename T>
 ComponentID Registry::RegisterComponent() {
     auto id = static_cast<ComponentID>(m_components.size());
     m_components.emplace_back(ComponentDescription{
-        .block_size = sizeof(T),
+        .data_size = sizeof(T),
+        .alignment = alignof(T),
         .constructor = [](void *dest){ new (dest) T; },
         .destructor = [](void *ptr){
             auto *item = reinterpret_cast<T*>(ptr);

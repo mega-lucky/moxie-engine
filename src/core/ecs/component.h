@@ -32,12 +32,12 @@ void ComponentPool::Add(Entity entity, T&& data) {
         m_sparse.resize(entity + 1, -1);
     }
     m_sparse[entity] = static_cast<int32_t>(m_entities.size());
-    size_t offset = m_entities.size() * m_description.block_size;
+    size_t offset = m_entities.size() * m_stride;
 
     m_entities.push_back(entity);
-    m_data.resize(m_data.size() + m_description.block_size);
+    m_data.resize(m_data.size() + m_stride);
 
-    m_description.move(m_data.data() + offset, &data);
+    move(m_data.data() + offset, &data);
 }
 
 }

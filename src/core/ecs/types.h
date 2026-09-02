@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <byte_allocator.h>
 
 using Entity = uint32_t;
 using ComponentID = uint32_t;
@@ -15,8 +16,8 @@ struct lua_State;
 
 namespace World {
 
-    struct ComponentDescription {
-    size_t block_size;
+struct ComponentDescription {
+    size_t data_size, alignment;
     std::function<void(void*)> constructor;
     std::function<void(void*)> destructor;
     std::function<void(void*, const void*)> copy;
@@ -27,15 +28,19 @@ class Registry;
 
 class ComponentPool {
 private:
-    ComponentDescription m_description;
-    std::vector<std::byte> m_data;
+    const std::function<void(void*)> constructor;
+    const std::function<void(void*)> destructor;
+    const std::function<void(void*, const void*)> copy;
+    const std::function<void(void*, void*)> move;
+    
+    std::vector<std::byte, byte_allocator> m_data;
     std::vector<Entity> m_entities;
     std::vector<int32_t> m_sparse;
+    size_t m_stride;
 
     friend Registry;
 public:
     ComponentPool(const ComponentDescription &desc);
-    ComponentPool(ComponentDescription &&desc);
 
     const void *Get(Entity entity) const;
     void *Get(Entity entity);

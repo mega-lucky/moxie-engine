@@ -13,6 +13,7 @@ target_link_options(compiler_flags INTERFACE
 add_subdirectory(core)
 add_subdirectory(bindings)
 add_subdirectory(systems)
+add_subdirectory(utils)
 
 add_executable(moxie-engine main.cpp)
 target_link_libraries(moxie-engine PRIVATE
@@ -23,4 +24,8 @@ target_link_libraries(moxie-engine PRIVATE
     glm
     render_system
     glad
+    utils
+)
+set_target_properties(moxie-engine PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )

@@ -56,4 +56,6 @@ FetchContent_MakeAvailable(cglm)
 FetchContent_MakeAvailable(glm)
 FetchContent_MakeAvailable(luau)
 
-FetchContent_MakeAvailable(googlebenchmark)
+if (BUILD_BENCHMARKS)
+    FetchContent_MakeAvailable(googlebenchmark)
+endif()

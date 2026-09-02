@@ -18,6 +18,7 @@ target_include_directories(lua_bindings
 target_link_libraries(lua_bindings
     PRIVATE
         glad
+        utils
         compiler_flags
     PUBLIC
         Luau.VM

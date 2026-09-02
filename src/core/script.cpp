@@ -82,7 +82,13 @@ void Script::Scheduler::kill_thread(lua_State *thread) {
 
 Script::Scheduler::Scheduler(Engine &engine) : m_mainthread(luaL_newstate()) {
     lua_setthreaddata(m_mainthread, &engine);
-    luaL_openlibs(m_mainthread);
+
+    luaopen_base(m_mainthread);
+    luaopen_vector(m_mainthread);
+    luaopen_math(m_mainthread);
+    luaopen_table(m_mainthread);
+    luaopen_string(m_mainthread);
+
     register_time_lib(m_mainthread);
     register_world(m_mainthread);
     register_meta(m_mainthread, transform_meta, UserdataTag::TransformComponent);

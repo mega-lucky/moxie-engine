@@ -149,11 +149,28 @@ static void key_callback(GLFWwindow* window, int glfwkey, int scancode, int acti
     int index = static_cast<int>(key);
     userdata->inputs->SetKeyPressed(index, (action != GLFW_RELEASE));
 }
+static void mouse_button_callback(GLFWwindow* window, int glfwbutton, int action, int mods) {
+    auto* userdata = static_cast<GlfwUserdata*>(glfwGetWindowUserPointer(window));
+    if (!userdata || !userdata->inputs) return;
+
+    if (glfwbutton < 0 || glfwbutton > GLFW_KEY_LAST) {
+        return;
+    }
+
+    Input::MouseInput button = glfw_tomouse[glfwbutton];
+    if (button == Input::MouseInput::Unknown) {
+        return;
+    }
+
+    int index = static_cast<int>(button);
+    userdata->inputs->SetMousePressed(index, (action != GLFW_RELEASE));
+}
 Input::Manager::Manager(GLFWwindow *ctx) : m_context(ctx) {
     init_input_maps();
     auto *userdata = static_cast<GlfwUserdata*>(glfwGetWindowUserPointer(m_context));
     userdata->inputs = this;
     glfwSetKeyCallback(m_context, key_callback);
+    glfwSetMouseButtonCallback(m_context, mouse_button_callback);
 }
 bool Input::Manager::IsKeyDown(Input::KeyInput input) {
     return m_keys[static_cast<int>(input)].pressed;

@@ -2,6 +2,7 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include <stdexcept>
+#include <glfwinternal.hpp>
 
 using WindowContext = GLFWwindow;
 
@@ -23,13 +24,13 @@ static void err_callback(int code, const char *desc) {
 }
 
 static void resize_callback(WindowContext* context, int width, int height) {
-    auto *window = static_cast<Window::Container*>(glfwGetWindowUserPointer(context));
+    auto *userdata = static_cast<GlfwUserdata*>(glfwGetWindowUserPointer(context));
 
-    if (window == nullptr) {
+    if (userdata->window == nullptr) {
         return;
     }
 
-    window->Resize(width, height);
+    userdata->window->Resize(width, height);
 }
 
 Window::Container::Container(int width, int height, const std::string name) :
@@ -39,7 +40,7 @@ Window::Container::Container(int width, int height, const std::string name) :
 {
     glfwInit();
     glfwSetErrorCallback(err_callback);
-    
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -47,9 +48,8 @@ Window::Container::Container(int width, int height, const std::string name) :
     glfwWindowHint(GLFW_MAXIMIZED, GLFW_FALSE);
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     glfw_ref_count ++;
-
+    
     m_context = glfwCreateWindow(m_width, m_height, m_name.c_str(), NULL, NULL);
-
     if (m_context == nullptr) {
         throw std::runtime_error("Failed to initialise GLFW context.");
     }
@@ -58,6 +58,10 @@ Window::Container::Container(int width, int height, const std::string name) :
     glfwSetFramebufferSizeCallback(m_context, (GLFWframebuffersizefun)resize_callback);
     glfwSetWindowUserPointer(m_context, this);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
+    auto *userdata = new GlfwUserdata;
+    userdata->window = this;
+    glfwSetWindowUserPointer(m_context, userdata);
 }
 Window::Container::~Container() {
     glfwDestroyWindow(m_context);
@@ -106,6 +110,9 @@ void Window::Container::Show() {
 }
 void Window::Container::Hide() {
     glfwHideWindow(m_context);
+}
+GLFWwindow *Window::Container::GetContext() {
+    return m_context;
 }
 void Window::PollEvents() {
     glfwPollEvents();

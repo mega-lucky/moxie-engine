@@ -5,6 +5,7 @@
 #include "./script.hpp"
 #include "./window.hpp"
 #include "./time.hpp"
+#include "./input.hpp"
 
 struct mesh_shape;
 struct material_data;
@@ -19,6 +20,7 @@ public:
     World::Registry WorldRegistry;
     Window::Container MainWindow;
     Script::Scheduler ScriptSchuduler;
+    Input::Manager InputManager;
     Time Timer;
     AssetStore Assets;
 

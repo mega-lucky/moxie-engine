@@ -30,6 +30,7 @@ public:
     void BindResizeCallback(const ResizeCallback &cb);
     void Show();
     void Hide();
+    GLFWwindow *GetContext();
 };
 
 void PollEvents();

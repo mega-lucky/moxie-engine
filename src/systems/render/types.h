@@ -91,6 +91,36 @@ typedef struct font_face {
     int line_height;
 } font_face;
 
+enum cam_proj {
+    projection_None,
+    projection_Perspective,
+    projection_Orthographic
+};
+
+typedef struct camera_frustrum {
+    float fieldofview;
+    float aspect;
+} camera_frustrum;
+
+typedef struct camera_box {
+    float left, right;
+    float top, bottom;
+} camera_box;
+
+typedef struct camera_data {
+    enum cam_proj projection;
+    float near, far;
+    union  {
+        camera_frustrum frustrum;
+        camera_box box;
+    };
+} camera_data;
+
+typedef struct view_proj {
+    mat4 view;
+    mat4 proj;
+} view_proj;
+
 enum drawcall_type {
     mesh_drawcall,
     text_drawcall

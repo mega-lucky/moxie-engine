@@ -1,10 +1,11 @@
 #ifndef __TRANSFORM_H__
 #define __TRANSFORM_H__
+#include <cglm/cglm.h>
 
 typedef struct transform {
-    float position[3];
-    float scale[3];
-    float rotation[4];
+    vec3 position;
+    vec3 scale;
+    versor rotation;
 } transform;
 
 #endif

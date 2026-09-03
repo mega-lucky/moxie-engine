@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #endif
 #include <glad/glad.h>
+#include <cglm/cglm.h>
 
 enum texture_type {
     ALBEDO_TEXTURE
@@ -66,9 +67,9 @@ typedef struct mesh_shape {
 } mesh_shape;
 
 typedef struct mesh_vertex {
-    float position[3];
-    float normal[3];
-    float uv[2];
+    vec3 position;
+    vec3 normal;
+    vec2 uv[2];
     unsigned char colour[4];
 } mesh_vertex;
 
@@ -99,7 +100,7 @@ typedef struct draw_call {
     enum drawcall_type type;
     union {
         struct {
-            float model[16];
+            mat4 model;
             mesh_shape *mesh;
             material_data *material;
         } mesh;

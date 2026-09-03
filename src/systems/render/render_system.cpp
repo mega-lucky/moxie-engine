@@ -1,7 +1,7 @@
 #include "./render_system.hpp"
 #include "./process_calls.h"
 #include <algorithm>
-#include <glm/gtc/type_ptr.hpp>
+#include <cglm/cglm.h>
 #include <iostream>
 
 RenderSystem::RenderSystem(Engine &e) :
@@ -22,27 +22,28 @@ void RenderSystem::Update(double dt) {
 
     World::Query(world, {MeshRender, MeshShape, Transform}).Each([this](Entity entity){
         transform &t = world.GetComponent<transform>(entity, Transform);
-        glm::mat4 mrot = glm::mat4_cast(glm::make_quat(t.rotation));
-        glm::mat4 mpos = glm::translate(glm::mat4(1.0f), glm::make_vec3(t.position));
-        glm::mat4 mscale = glm::scale(glm::mat4(1.0f), glm::make_vec3(t.scale));
 
-        glm::mat4 model = mpos * mrot * mscale;
         mesh_shape &m = world.GetComponent<mesh_shape>(entity, MeshShape);
         mesh_renderer &r = world.GetComponent<mesh_renderer>(entity, MeshRender);
 
         draw_call call = {
             .type = mesh_drawcall,
             .mesh = {
-                .model = {},
+                .model = {0},
                 .mesh = &m,
                 .material = r.material,
             }
         };
+        
+        glm_quat_mat4(t.rotation, call.mesh.model);
+        
+        call.mesh.model[0][0] *= t.scale[0];
+        call.mesh.model[1][1] *= t.scale[1];
+        call.mesh.model[2][2] *= t.scale[2];
 
-        float *start = glm::value_ptr(model);
-        float *end = start + 16;
-
-        std::copy(start, end, call.mesh.model);
+        call.mesh.model[3][0] = t.position[0];
+        call.mesh.model[3][1] = t.position[1];
+        call.mesh.model[3][2] = t.position[2];
 
         draw_calls.push_back(std::move(call));
     });

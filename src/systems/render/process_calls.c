@@ -40,12 +40,12 @@ void run_draw_call(const draw_call *call) {
 
             shader_data *shader = call->mesh.material->shader;
             texture_data *texture = call->mesh.material->textures[0];
-            const float *model = call->mesh.model;
+            const float *model = &call->mesh.model[0][0];
 
             glUseProgram(shader->id);
 
             mat4 projection;
-            glm_perspective(glm_rad(70.0f), 8.0f / 6.0f, 0.01f, 2000.0f, projection);
+            glm_perspective(glm_rad(55.41f), 8.0f / 6.0f, 0.01f, 2000.0f, projection);
             mat4 view;
             glm_mat4_identity(view);
 

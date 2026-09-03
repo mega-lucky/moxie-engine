@@ -15,4 +15,4 @@ target_sources(render_system
             render/render_system.hpp
             render/shader.h
 )
-target_link_libraries(render_system PRIVATE glad cglm glm core compiler_flags)
+target_link_libraries(render_system PUBLIC cglm PRIVATE glad glm core compiler_flags)

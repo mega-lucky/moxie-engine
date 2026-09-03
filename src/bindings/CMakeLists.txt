@@ -21,6 +21,7 @@ target_link_libraries(lua_bindings
         glad
         utils
         compiler_flags
+        cglm
     PUBLIC
         Luau.VM
         Luau.Compiler

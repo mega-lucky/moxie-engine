@@ -30,7 +30,7 @@ void init_drawcall_proccessor() {
     xinit_mesh(&text_mash, NULL, 0, NULL, 0, &text_layout);
 }
 
-void run_draw_call(const draw_call *call) {
+void run_draw_call(const draw_call *call, const mat4 view, const mat4 proj) {
     switch (call->type) {
         case mesh_drawcall: {
             glBindVertexArray(call->mesh.mesh->VAO);
@@ -44,16 +44,11 @@ void run_draw_call(const draw_call *call) {
 
             glUseProgram(shader->id);
 
-            mat4 projection;
-            glm_perspective(glm_rad(55.41f), 8.0f / 6.0f, 0.01f, 2000.0f, projection);
-            mat4 view;
-            glm_mat4_identity(view);
-
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture->id);
 
             glUniform1i(glGetUniformLocation(shader->id, "utexture"), 0);
-            glUniformMatrix4fv(glGetUniformLocation(shader->id, "uprojection"), 1, false, &projection[0][0]);
+            glUniformMatrix4fv(glGetUniformLocation(shader->id, "uprojection"), 1, false, &proj[0][0]);
             glUniformMatrix4fv(glGetUniformLocation(shader->id, "uview"), 1, false, &view[0][0]);
             glUniformMatrix4fv(glGetUniformLocation(shader->id, "umodel"), 1, false, model);
 
@@ -196,8 +191,11 @@ void run_draw_call(const draw_call *call) {
     }
 }
 
-void process_calls(draw_call *calls, size_t n_calls) {
-    for (size_t i = 0; i < n_calls; i ++) {
-        run_draw_call(&calls[i]);
+void process_calls(draw_call *calls, size_t n_calls, view_proj *cam_matrices, size_t n_cams) {
+    for (size_t i = 0; i < n_cams; i ++) {
+        view_proj *vp = &cam_matrices[i];
+        for (size_t j = 0; j < n_calls; j ++) {
+            run_draw_call(&calls[j], vp->view, vp->proj);
+        }
     }
 }

@@ -79,6 +79,11 @@ void RenderSystem::Update(double dt) {
         draw_calls.push_back(std::move(call));
     });
 
-    process_calls(draw_calls.data(), draw_calls.size());
+    if (cam_matrices.size() == 0) {
+        cam_matrices.emplace_back(view_proj{0, 0});
+        glm_mat4_identity(cam_matrices.data()->view);
+        glm_perspective(glm_rad(45.0f), 8.0f/6.0f, 0.01f, 200.0f, cam_matrices.data()->proj);
+    }
+    process_calls(draw_calls.data(), draw_calls.size(), cam_matrices.data(), cam_matrices.size());
     glFinish();
 }

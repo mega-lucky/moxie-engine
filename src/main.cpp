@@ -33,9 +33,11 @@ int main() {
     ComponentID Transform = world.RegisterComponent<transform>();
     ComponentID MeshShape = world.RegisterComponent<mesh_shape>();
     ComponentID MeshRender = world.RegisterComponent<mesh_renderer>();
+    ComponentID Camera = world.RegisterComponent<camera_data>();
     world.StoreComponentID(Transform, "Transform");
     world.StoreComponentID(MeshShape, "MeshShape");
     world.StoreComponentID(MeshRender, "MeshRender");
+    world.StoreComponentID(Camera, "Camera");
 
     world.RegisterSystem<RenderSystem>(new_engine);
 

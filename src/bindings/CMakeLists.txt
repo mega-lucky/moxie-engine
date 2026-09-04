@@ -6,6 +6,7 @@ add_library(lua_bindings OBJECT
     meta/meshshape_meta.cpp
     meta/meshrender_meta.cpp
     meta/worldquery_meta.cpp
+    meta/camera_meta.cpp
 )
 target_include_directories(lua_bindings
     PRIVATE

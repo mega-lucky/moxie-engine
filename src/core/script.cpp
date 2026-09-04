@@ -88,7 +88,7 @@ Script::Scheduler::Scheduler(Engine &engine) : m_mainthread(luaL_newstate()) {
     luaopen_math(m_mainthread);
     luaopen_table(m_mainthread);
     luaopen_string(m_mainthread);
-
+    
     register_time_lib(m_mainthread);
     register_world(m_mainthread);
     register_inputs_lib(m_mainthread);
@@ -96,6 +96,7 @@ Script::Scheduler::Scheduler(Engine &engine) : m_mainthread(luaL_newstate()) {
     register_meta(m_mainthread, transform_meta, UserdataTag::TransformComponent);
     register_meta(m_mainthread, meshshape_meta, UserdataTag::MeshShapeComponent);
     register_meta(m_mainthread, meshrender_meta, UserdataTag::MeshRenderComponent);
+    register_meta(m_mainthread, camera_meta, UserdataTag::CameraComponent);
     register_meta(m_mainthread, worldquery_meta, UserdataTag::WorldQuery);
 }
 Script::Scheduler::~Scheduler() {

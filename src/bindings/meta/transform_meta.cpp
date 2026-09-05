@@ -32,11 +32,13 @@ void transform_meta(lua_State *L) {
             lua_pushvector(L, data.scale[0], data.scale[1], data.scale[2]);
             return 1;
         } else if (strcmp(k, "Rotation") == 0) {
-            lua_createtable(L, 4, 0);
-            for (int i = 0; i < 4; i ++) {
-                lua_pushnumber(L, data.rotation[i]);
-                lua_rawseti(L, -2, i+1);
-            }
+            auto *quat = static_cast<float*>(lua_newuserdatataggedwithmetatable(
+                L,
+                sizeof(versor),
+                static_cast<int>(UserdataTag::Quaternion)
+            ));
+            
+            memcpy(quat, data.rotation, sizeof(versor));
             return 1;
         }
 
@@ -65,14 +67,13 @@ void transform_meta(lua_State *L) {
             std::copy(vec, vec + 3, data.scale);
             return 0;
         } else if (strcmp(k, "Rotation") == 0) {
-            int arg_type = lua_type(L, 3);
-            if (arg_type != LUA_TTABLE) {
-                luaL_error(L, "Table expected, got %s instead", lua_typename(L, arg_type));
-            }
-            for (int i = 0; i < 4; i ++) {
-                lua_rawgeti(L, 3, i+1);
-                data.rotation[i] = luaL_checknumber(L, -1);
-            }
+            auto *quat = static_cast<float*>(luaL_checkudatatagged(
+                L,
+                3,
+                static_cast<int>(UserdataTag::Quaternion)
+            ));
+            
+            memcpy(data.rotation, quat, sizeof(versor));
             return 0;
         }
 

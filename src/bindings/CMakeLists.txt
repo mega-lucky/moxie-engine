@@ -2,11 +2,13 @@ add_library(lua_bindings OBJECT
     world_lua.cpp
     time_lua.cpp
     inputs_lua.cpp
+    quaternion_lua.cpp
     meta/transform_meta.cpp
     meta/meshshape_meta.cpp
     meta/meshrender_meta.cpp
     meta/worldquery_meta.cpp
     meta/camera_meta.cpp
+    meta/quaternion_meta.cpp
 )
 target_include_directories(lua_bindings
     PRIVATE

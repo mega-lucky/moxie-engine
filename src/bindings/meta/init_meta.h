@@ -16,5 +16,6 @@ void meshshape_meta(lua_State *L);
 void meshrender_meta(lua_State *L);
 void worldquery_meta(lua_State *L);
 void camera_meta(lua_State *L);
+void quaternion_meta(lua_State *L);
 
 #endif

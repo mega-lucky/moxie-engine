@@ -18,13 +18,8 @@ add_subdirectory(utils)
 add_executable(moxie-engine main.cpp)
 target_link_libraries(moxie-engine PRIVATE
     core
-    lua_bindings
+    bindings
     systems
-    cglm
-    glm
-    render_system
-    glad
-    utils
 )
 set_target_properties(moxie-engine PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"

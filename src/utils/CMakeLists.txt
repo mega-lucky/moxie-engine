@@ -1,4 +1,4 @@
-add_library(utils OBJECT
+add_library(utils STATIC
     byte_allocator.cpp
 )
 target_include_directories(utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

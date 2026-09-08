@@ -2,8 +2,6 @@
 #include <render_system.hpp>
 #include <cglm/quat.h>
 #include <iostream>
-#include <lua.h>
-#include <lualib.h>
 
 GLuint gen_checkers(uint8_t c1[3], uint8_t c2[3]) {
     uint8_t buffer[2 * 2 * 3] = {

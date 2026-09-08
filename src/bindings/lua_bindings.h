@@ -1,8 +1,6 @@
 #ifndef LUA_BINDINGS
 #define LUA_BINDINGS
 
-#include <engine.hpp>
-
 struct lua_State;
 
 int register_world(lua_State *L);

@@ -1,11 +1,11 @@
 #ifndef __ENGINE__H__
 #define __ENGINE__H__
 
-#include "./world.hpp"
-#include "./script.hpp"
-#include "./window.hpp"
-#include "./time.hpp"
-#include "./input.hpp"
+#include <world.hpp>
+#include <script.hpp>
+#include <window.hpp>
+#include <time.hpp>
+#include <input.hpp>
 
 struct mesh_shape;
 struct material_data;

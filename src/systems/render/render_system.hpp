@@ -7,6 +7,7 @@
 #include "./mesh.h"
 #include "./shader.h"
 #include "./types.h"
+#include <text.h>
 
 class RenderSystem : public World::IWorldSystem {
 private:

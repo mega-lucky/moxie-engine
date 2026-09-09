@@ -121,6 +121,15 @@ typedef struct view_proj {
     mat4 proj;
 } view_proj;
 
+typedef struct ui_text {
+    const char *content;
+    size_t content_len;
+    font_face *font;
+    float x, y;
+    float scale;
+    unsigned char colour[4];
+} ui_text;
+
 enum drawcall_type {
     mesh_drawcall,
     text_drawcall
@@ -140,7 +149,7 @@ typedef struct draw_call {
             font_face *font;
             float x, y;
             float scale;
-            float colour[4];
+            unsigned char colour[4];
         } text;
     };
 } draw_call;

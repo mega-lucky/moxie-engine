@@ -9,7 +9,8 @@ RenderSystem::RenderSystem(Engine &e) :
     MeshRender(world.GetComponentID("MeshRender")),
     MeshShape(world.GetComponentID("MeshShape")),
     Transform(world.GetComponentID("Transform")),
-    Camera(world.GetComponentID("Camera"))
+    Camera(world.GetComponentID("Camera")),
+    UiText(world.GetComponentID("UiText"))
 {
     glClearColor(1.0f,1.0f,0.0f,1.0f);
     glEnable(GL_DEPTH_TEST);

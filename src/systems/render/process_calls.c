@@ -6,13 +6,14 @@
 typedef struct text_data {
     float pos[2];
     float uv[2];
-    char colour[4];
+    unsigned char colour[4];
 } text_data;
 
 static shader_data text_shader = {0};
-static mesh_shape text_mash = {0};
 static text_data *text_data_buffer = NULL;
 static size_t n_text_vertices = 0;
+static GLuint text_vao = 0;
+static GLuint text_vbo = 0;
 
 void init_drawcall_proccessor() {
     init_shader_from_file(&text_shader, "assets/shaders/text_vert.glsl", "assets/shaders/text_frag.glsl");
@@ -27,7 +28,20 @@ void init_drawcall_proccessor() {
         .n_attribs = 3,
         .stride = 12
     };
-    xinit_mesh(&text_mash, NULL, 0, NULL, 0, &text_layout);
+
+    text_data_buffer = malloc(sizeof(text_data) * 1024);
+
+    glGenVertexArrays(1, &text_vao);
+    glBindVertexArray(text_vao);
+    glGenBuffers(1, &text_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, text_vbo);
+    glBufferData(GL_ARRAY_BUFFER, 0, text_data_buffer, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(text_data), (void*)offsetof(text_data, pos));
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(text_data), (void*)offsetof(text_data, uv));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(text_data), (void*)offsetof(text_data, colour));
+    glEnableVertexAttribArray(2);
 }
 
 void run_draw_call(const draw_call *call, const mat4 view, const mat4 proj) {
@@ -63,18 +77,18 @@ void run_draw_call(const draw_call *call, const mat4 view, const mat4 proj) {
 
             glUniform1i(glGetUniformLocation(text_shader.id, "utexture"), 0);
 
-            glBindVertexArray(text_mash.VAO);
-            mat4 proj;
-            glm_ortho(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f, proj);
-            glUniformMatrix4fv(glGetUniformLocation(text_shader.id, "projection"), 1, GL_FALSE, &proj[0][0]);
-            glBindBuffer(GL_ARRAY_BUFFER, text_mash.VBO);
+            glBindVertexArray(text_vao);
+            mat4 projection;
+            glm_ortho(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f, projection);
+            glUniformMatrix4fv(glGetUniformLocation(text_shader.id, "projection"), 1, GL_FALSE, &projection[0][0]);
+            glBindBuffer(GL_ARRAY_BUFFER, text_vbo);
             n_text_vertices = 0;
 
             float x = call->text.x;
             float y = call->text.y;
 
             for (size_t i = 0; i < call->text.content_len; i++) {
-               unsigned char c = call->text.content[i];
+                unsigned char c = call->text.content[i];
                 if (c < 32 || c > 127) { c = 127; } // del
 
                 font_face *font = call->text.font;
@@ -176,11 +190,13 @@ void run_draw_call(const draw_call *call, const mat4 view, const mat4 proj) {
 
                 x += (float)glyph->advance * call->text.scale;
             }
+            
             glBufferData(
                 GL_ARRAY_BUFFER,
                 sizeof(text_data) * n_text_vertices,
                 text_data_buffer,
-                GL_DYNAMIC_DRAW);
+                GL_DYNAMIC_DRAW
+            );
 
             glDepthMask(GL_FALSE);
             glDrawArrays(GL_TRIANGLES, 0, n_text_vertices);

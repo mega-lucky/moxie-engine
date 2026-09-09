@@ -7,6 +7,7 @@ target_sources(render_system
         render/process_calls.c
         render/render_system.cpp
         render/shader.cpp
+        render/text.cpp
     PUBLIC
         FILE_SET render_system_headers
         TYPE HEADERS
@@ -16,5 +17,6 @@ target_sources(render_system
             render/process_calls.h
             render/render_system.hpp
             render/shader.h
+            render/text.h
 )
-target_link_libraries(render_system PUBLIC cglm glad PRIVATE core compiler_flags)
+target_link_libraries(render_system PUBLIC cglm glad PRIVATE freetype core compiler_flags)

@@ -19,6 +19,7 @@ private:
     ComponentID MeshShape;
     ComponentID Transform;
     ComponentID Camera;
+    ComponentID UiText;
 public:
     RenderSystem(Engine &e);
     void Update(double dt) override;

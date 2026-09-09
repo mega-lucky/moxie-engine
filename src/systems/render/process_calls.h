@@ -7,6 +7,7 @@
 extern "C" {
 #endif
 
+void init_drawcall_proccessor();
 void process_calls(draw_call *calls, size_t n_calls, view_proj *cam_matrices, size_t n_cams);
 
 #ifdef __cplusplus

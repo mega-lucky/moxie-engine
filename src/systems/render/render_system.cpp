@@ -15,6 +15,9 @@ RenderSystem::RenderSystem(Engine &e) :
     glClearColor(1.0f,1.0f,0.0f,1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    init_drawcall_proccessor();
 }
 
 void RenderSystem::Update(double dt) {
@@ -76,6 +79,27 @@ void RenderSystem::Update(double dt) {
         call.mesh.model[3][0] = t.position[0];
         call.mesh.model[3][1] = t.position[1];
         call.mesh.model[3][2] = t.position[2];
+
+        draw_calls.push_back(std::move(call));
+    });
+
+    World::Query(world, {UiText}).Each([this](Entity entity){
+        ui_text &text = world.GetComponent<ui_text>(entity, UiText);
+
+        draw_call call = {
+            .type = text_drawcall,
+            .text = {
+                .content = text.content,
+                .content_len = text.content_len,
+                .font = text.font,
+                .x = text.x,
+                .y = text.y,
+                .scale = text.scale,
+                .colour = {0}
+            }
+        };
+
+        std::copy(&text.colour[0], &text.colour[0] + 4, call.text.colour);
 
         draw_calls.push_back(std::move(call));
     });

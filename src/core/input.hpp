@@ -55,11 +55,21 @@ struct InputInfo {
     bool was_pressed = false;
 };
 
+struct MousePosition {
+    double x, y;
+};
+
+struct MouseDelta {
+    double x, y;
+};
+
 class Manager {
 private:
     GLFWwindow *m_context;
     InputInfo m_keys[static_cast<int>(KeyInput::Count)];
     InputInfo m_mousebuttons[static_cast<int>(MouseInput::Count)];
+    MousePosition m_mousepos;
+    MouseDelta m_mousedelta;
 public:
     Manager(GLFWwindow *);
     bool IsKeyDown(KeyInput);
@@ -68,6 +78,8 @@ public:
 
     void SetKeyPressed(int index, bool pressed);
     void SetMousePressed(int index, bool pressed);
+    MousePosition GetMousePosition();
+    MouseDelta GetMouseDelta();
 };
 
 }

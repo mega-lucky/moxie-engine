@@ -185,6 +185,13 @@ void Input::Manager::Update() {
     for (auto &inputinfo : m_mousebuttons) {
         inputinfo.was_pressed = inputinfo.pressed;
     }
+    MousePosition mouse_pos;
+    glfwGetCursorPos(m_context, &mouse_pos.x, &mouse_pos.y);
+    
+    m_mousedelta.x = mouse_pos.x - m_mousepos.x;
+    m_mousedelta.y = mouse_pos.y - m_mousepos.y;
+    m_mousepos = mouse_pos;
+
     glfwPollEvents();
 }
 void Input::Manager::SetKeyPressed(int index, bool pressed) {
@@ -192,4 +199,12 @@ void Input::Manager::SetKeyPressed(int index, bool pressed) {
 }
 void Input::Manager::SetMousePressed(int index, bool pressed) {
     m_mousebuttons[index].pressed = pressed;
+}
+
+Input::MousePosition Input::Manager::GetMousePosition() {
+    return m_mousepos;
+}
+
+Input::MouseDelta Input::Manager::GetMouseDelta() {
+    return m_mousedelta;
 }

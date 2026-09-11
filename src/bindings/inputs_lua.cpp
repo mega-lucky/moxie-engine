@@ -32,9 +32,43 @@ int is_mouse_button_down(lua_State *L) {
     return 1;
 }
 
+int get_mouse_position(lua_State *L) {
+    auto *engine = static_cast<Engine*>(lua_getthreaddata(lua_mainthread(L)));
+    auto &inputs = engine->InputManager;
+
+    auto mousepos = inputs.GetMousePosition();
+
+    lua_createtable(L, 0, 2);
+    lua_pushnumber(L, mousepos.x);
+    lua_setfield(L, -2, "X");
+
+    lua_pushnumber(L, mousepos.y);
+    lua_setfield(L, -2, "Y");
+
+    return 1;
+}
+
+int get_mouse_delta(lua_State *L) {
+    auto *engine = static_cast<Engine*>(lua_getthreaddata(lua_mainthread(L)));
+    auto &inputs = engine->InputManager;
+
+    auto mousepos = inputs.GetMouseDelta();
+
+    lua_createtable(L, 0, 2);
+    lua_pushnumber(L, mousepos.x);
+    lua_setfield(L, -2, "X");
+
+    lua_pushnumber(L, mousepos.y);
+    lua_setfield(L, -2, "Y");
+
+    return 1;
+}
+
 luaL_Reg inputs_lib[] = {
     {"IsKeyDown", is_key_down},
     {"IsMouseButtonDown", is_mouse_button_down},
+    {"GetMousePosition", get_mouse_position},
+    {"GetMouseDelta", get_mouse_delta},
     {nullptr, nullptr}
 };
 

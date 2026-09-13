@@ -39,7 +39,7 @@ int main() {
     world.StoreComponentID(Camera, "Camera");
     world.StoreComponentID(UiText, "UiText");
 
-    world.RegisterSystem<RenderSystem>(new_engine);
+    world.RegisterSystem<RenderSystem>(new_engine.WorldRegistry, new_engine.MainWindow);
 
     material_data material;
     shader_data shader;

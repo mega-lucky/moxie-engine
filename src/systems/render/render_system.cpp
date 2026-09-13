@@ -4,8 +4,9 @@
 #include <cglm/cglm.h>
 #include <iostream>
 
-RenderSystem::RenderSystem(Engine &e) :
-    world(e.WorldRegistry),
+RenderSystem::RenderSystem(World::Registry &worldref, Window::Container &windowref) :
+    world(worldref),
+    window(windowref),
     MeshRender(world.GetComponentID("MeshRender")),
     MeshShape(world.GetComponentID("MeshShape")),
     Transform(world.GetComponentID("Transform")),

@@ -14,6 +14,7 @@ private:
     std::vector<draw_call> draw_calls;
     std::vector<view_proj> cam_matrices;
     World::Registry &world;
+    Window::Container &window;
 
     ComponentID MeshRender;
     ComponentID MeshShape;
@@ -21,7 +22,7 @@ private:
     ComponentID Camera;
     ComponentID UiText;
 public:
-    RenderSystem(Engine &e);
+    RenderSystem(World::Registry &worldreg, Window::Container &window);
     void Update(double dt) override;
 };
 

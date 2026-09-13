@@ -18,6 +18,12 @@ RenderSystem::RenderSystem(World::Registry &worldref, Window::Container &windowr
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glViewport(0, 0, window.Width(), window.Height());
+
+    window.BindResizeCallback([](int width, int height){
+        glViewport(0, 0, width, height);
+    });
+
     init_drawcall_proccessor();
 }
 
@@ -48,7 +54,7 @@ void RenderSystem::Update(double dt) {
         glm_mat4_inv(model, vp.view);
 
         if (c.projection == projection_Perspective) {
-            glm_perspective(c.frustrum.fieldofview, c.frustrum.aspect, c.near, c.far, vp.proj);
+            glm_perspective(c.frustrum.fieldofview, window.AspectRatio(), c.near, c.far, vp.proj);
         } else if (c.projection == projection_Orthographic) {
             glm_ortho(c.box.left, c.box.right, c.box.bottom, c.box.top, c.near, c.far, vp.proj);
         }
@@ -108,7 +114,7 @@ void RenderSystem::Update(double dt) {
     if (cam_matrices.size() == 0) {
         cam_matrices.emplace_back(view_proj{0, 0});
         glm_mat4_identity(cam_matrices.data()->view);
-        glm_perspective(glm_rad(45.0f), 8.0f/6.0f, 0.01f, 200.0f, cam_matrices.data()->proj);
+        glm_perspective(glm_rad(45.0f), window.AspectRatio(), 0.01f, 200.0f, cam_matrices.data()->proj);
     }
     process_calls(draw_calls.data(), draw_calls.size(), cam_matrices.data(), cam_matrices.size());
     glFinish();

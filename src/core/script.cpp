@@ -90,7 +90,7 @@ Script::Scheduler::Scheduler(Engine &engine) : m_mainthread(luaL_newstate()) {
     luaopen_string(m_mainthread);
     
     register_time_lib(m_mainthread);
-    register_world(m_mainthread);
+    register_world_lib(m_mainthread);
     register_inputs_lib(m_mainthread);
     register_quat_lib(m_mainthread);
 

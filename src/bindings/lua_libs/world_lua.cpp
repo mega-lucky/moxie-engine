@@ -96,18 +96,6 @@ static luaL_Reg world_lib[] = {
     {nullptr, nullptr}
 };
 
-int register_world(lua_State *L) {
-    lua_newtable(L);
-    
-    for (auto &reg : world_lib) {
-        if (!reg.name || !reg.func) {
-            break;
-        }
-        lua_pushcfunction(L, reg.func, nullptr);
-        lua_setfield(L, -2, reg.name);
-    }
-
-    lua_setglobal(L, "World");
-
-    return 1;
+void register_world_lib(lua_State *L) {
+    luaL_register(L, "World", world_lib);
 }

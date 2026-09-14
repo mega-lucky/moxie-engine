@@ -6,9 +6,9 @@
 #include <sstream>
 #include <stdexcept>
 #include <iostream>
-#include <lua_bindings.h>
+#include <lua_libs.h>
 #include <engine.hpp>
-#include <init_meta.h>
+#include <lua_meta.h>
 
 std::string Script::Scheduler::compile_source(std::string& content) {
     size_t size;

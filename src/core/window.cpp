@@ -3,23 +3,17 @@
 #include "GLFW/glfw3.h"
 #include <stdexcept>
 #include <glfwinternal.hpp>
+#include <format>
 
 using WindowContext = GLFWwindow;
 
 #define DEFAULT_WIDTH 800
 #define DEFAULT_HEIGHT 600
 
-struct ResizeCallbackEntry {
-    Window::ResizeCallback callback;
-    ResizeCallbackEntry *next;
-    int id;
-};
-
 static int glfw_ref_count = 0;
 
 static void err_callback(int code, const char *desc) {
-    (void)code;
-    std::string message = "GLFW ERROR: " + std::string(desc);
+    std::string message = std::format("GLFW ERROR {}: {}", code, desc);
     throw std::runtime_error(message);
 }
 
@@ -56,7 +50,6 @@ Window::Container::Container(int width, int height, const std::string name) :
 
     glfwMakeContextCurrent(m_context);
     glfwSetFramebufferSizeCallback(m_context, (GLFWframebuffersizefun)resize_callback);
-    glfwSetWindowUserPointer(m_context, this);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
     auto *userdata = new GlfwUserdata;

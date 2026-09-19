@@ -52,7 +52,14 @@ static inline void sat_min_max(shape *a, vec3 axis, float *min, float *max) {
     }
 }
 
-static inline bool seperating_axis(shape *a, shape *b, vec3 *axes, size_t n_axes) {
+typedef struct sat_test_result {
+    vec3 normal;
+    float scale;
+} sat_test_result;
+
+static inline bool seperating_axis_static(shape *a, shape *b, vec3 *axes, size_t n_axes, sat_test_result *result) {
+    result->scale = FLT_MAX;
+    
     for (size_t i = 0; i < n_axes; i ++) {
         if (glm_vec3_norm2(axes[i]) < GLM_FLT_EPSILON) {
             continue;
@@ -66,6 +73,16 @@ static inline bool seperating_axis(shape *a, shape *b, vec3 *axes, size_t n_axes
 
         if (max0 < min1 || max1 < min0) {
             return true;
+        }
+
+        float depth = fminf(
+            fabsf(max0 - min1),
+            fabsf(min0 - max1)
+        );
+
+        if (result && result->scale > depth) {
+            result->scale = depth;
+            glm_vec3_copy(axis, result->normal);
         }
     }
 
@@ -85,5 +102,6 @@ bool obb_vs_obb(obb_collider *a, obb_collider *b, vec3 p0, vec3 p1) {
     shape s0 = {8, verts0};
     shape s1 = {8, verts1};
 
-    return !seperating_axis(&s0, &s1, axes, 15);
+    sat_test_result result;
+    return !seperating_axis_static(&s0, &s1, axes, 15, &result);
 }

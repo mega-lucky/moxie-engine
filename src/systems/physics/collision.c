@@ -59,9 +59,11 @@ static inline void sat_min_max(shape *a, vec3 axis, float *min, float *max) {
 static inline bool seperating_axis_static(shape *a, shape *b, vec3 *axes, size_t n_axes, sat_test_result *out) {
     sat_test_result result;
     result.overlap_depth = FLT_MAX;
+    float best_axis_sqlen = 1.0f;
     
     for (size_t i = 0; i < n_axes; i ++) {
-        if (glm_vec3_norm2(axes[i]) < GLM_FLT_EPSILON) {
+        float axis_sqlen = glm_vec3_norm2(axes[i]);
+        if (axis_sqlen < GLM_FLT_EPSILON) {
             continue;
         }
 
@@ -78,17 +80,22 @@ static inline bool seperating_axis_static(shape *a, shape *b, vec3 *axes, size_t
         float depth = fminf(
             fabsf(max0 - min1),
             fabsf(min0 - max1)
-        );
+        ) / axis_sqlen;
 
         if (out && result.overlap_depth > depth) {
+            best_axis_sqlen = axis_sqlen;
             result.overlap_depth = depth;
             glm_vec3_copy(axis, result.normal);
         }
     }
 
-
-    result.entry_time = 0.0f;
-    memcpy(out, &result, sizeof(result));
+    if (out) {
+        result.entry_time = 0.0f;
+        float axis_len = sqrtf(best_axis_sqlen);
+        result.overlap_depth = result.overlap_depth / axis_len;
+        glm_vec3_divs(result.normal, axis_len, result.normal);
+        memcpy(out, &result, sizeof(result));
+    }
     return false;
 }
 
@@ -99,10 +106,12 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
 
     sat_test_result result;
     result.overlap_depth = FLT_MAX;
-    result.entry_time = FLT_MAX;
+    result.entry_time = -FLT_MAX;
+    float best_axis_sqlen = 1.0f;
     
     for (size_t i = 0; i < n_axes; i ++) {
-        if (glm_vec3_norm2(axes[i]) < GLM_FLT_EPSILON) {
+        float axis_sqlen = glm_vec3_norm2(axes[i]);
+        if (axis_sqlen < GLM_FLT_EPSILON) {
             continue;
         }
 
@@ -120,11 +129,11 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
             float depth = fminf(
                 fabsf(max0 - min1),
                 fabsf(min0 - max1)
-            );
+            ) / axis_sqlen;
 
             if (out && result.overlap_depth > depth) {
                 result.overlap_depth = depth;
-                result.entry_time = 0.0f;
+                best_axis_sqlen = axis_sqlen;
                 glm_vec3_copy(axis, result.normal);
             }
             continue;
@@ -142,14 +151,24 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
             return true;
         }
 
-        if (out && entry_time < result.entry_time) {
+        if (out && entry_time > result.entry_time) {
             result.entry_time = entry_time;
             result.overlap_depth = 0.0f;
             glm_vec3_copy(axis, result.normal);
         }
     }
 
-    memcpy(out, &result, sizeof(result));
+    if (out) {
+        if (result.overlap_depth > 0.0f) {
+            result.entry_time = 0.0f;
+            float axis_len = sqrtf(best_axis_sqlen);
+            result.overlap_depth = result.overlap_depth / axis_len;
+            glm_vec3_divs(result.normal, axis_len, result.normal);
+        } else {
+            glm_vec3_normalize(result.normal);
+        }
+        memcpy(out, &result, sizeof(result));
+    }
     return false;
 }
 

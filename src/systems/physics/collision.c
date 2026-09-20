@@ -59,7 +59,7 @@ static inline void sat_min_max(shape *a, vec3 axis, float *min, float *max) {
 typedef struct sat_test_result {
     vec3 normal;
     float overlap_depth;
-    float entry_time
+    float entry_time;
 } sat_test_result;
 
 static inline bool seperating_axis_static(shape *a, shape *b, vec3 *axes, size_t n_axes, sat_test_result *result) {
@@ -115,7 +115,7 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
         sat_min_max(b, axis, &min1, &max1);
 
         if (max0 >= min1 && max1 >= min0) {
-            if (result->entry_time > 0.0f) {
+            if (result->entry_time > 0.0f && result->entry_time <= 1.0f) {
                 continue;
             }
 
@@ -126,6 +126,7 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
 
             if (result && result->overlap_depth > depth) {
                 result->overlap_depth = depth;
+                result->entry_time = 0.0f;
                 glm_vec3_copy(axis, result->normal);
             }
             continue;
@@ -152,7 +153,7 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
     return false;
 }
 
-bool obb_vs_obb(obb_collider *a, obb_collider *b, transform *t0, transform *t1) {
+bool obb_vs_obb_static(obb_collider *a, obb_collider *b, transform *t0, transform *t1) {
     vec3 axes[15];
 
     gen_obb_normals(t0->rotation, axes);
@@ -167,4 +168,21 @@ bool obb_vs_obb(obb_collider *a, obb_collider *b, transform *t0, transform *t1) 
 
     sat_test_result result;
     return !seperating_axis_static(&s0, &s1, axes, 15, &result);
+}
+
+bool obb_vs_obb_swept(obb_collider *a, obb_collider *b, transform *t0, transform *t1, vec3 delta) {
+    vec3 axes[15];
+
+    gen_obb_normals(t0->rotation, axes);
+    gen_obb_normals(t1->rotation, axes + 3);
+    bb_cross_axes(axes, axes + 3, axes + 6);
+
+    vec3 verts0[8]; gen_obb_vertices(a, t0, verts0);
+    vec3 verts1[8]; gen_obb_vertices(b, t1, verts1);
+
+    shape s0 = {8, verts0};
+    shape s1 = {8, verts1};
+
+    sat_test_result result;
+    return !seperating_axis_swept(&s0, &s1, delta, axes, 15, &result);
 }

@@ -83,3 +83,11 @@ target_link_libraries(script PRIVATE
 
 add_library(core INTERFACE)
 target_link_libraries(core INTERFACE engine)
+
+add_library(transform INTERFACE)
+target_sources(transform INTERFACE
+    FILE_SET transform_header
+    BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+    TYPE HEADERS
+    FILES ${CMAKE_CURRENT_SOURCE_DIR}/transform.h
+)

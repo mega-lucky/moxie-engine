@@ -62,8 +62,9 @@ typedef struct sat_test_result {
     float entry_time;
 } sat_test_result;
 
-static inline bool seperating_axis_static(shape *a, shape *b, vec3 *axes, size_t n_axes, sat_test_result *result) {
-    result->overlap_depth = FLT_MAX;
+static inline bool seperating_axis_static(shape *a, shape *b, vec3 *axes, size_t n_axes, sat_test_result *out) {
+    sat_test_result result;
+    result.overlap_depth = FLT_MAX;
     
     for (size_t i = 0; i < n_axes; i ++) {
         if (glm_vec3_norm2(axes[i]) < GLM_FLT_EPSILON) {
@@ -85,23 +86,26 @@ static inline bool seperating_axis_static(shape *a, shape *b, vec3 *axes, size_t
             fabsf(min0 - max1)
         );
 
-        if (result && result->overlap_depth > depth) {
-            result->overlap_depth = depth;
-            glm_vec3_copy(axis, result->normal);
+        if (out && result.overlap_depth > depth) {
+            result.overlap_depth = depth;
+            glm_vec3_copy(axis, result.normal);
         }
     }
 
-    result->entry_time = 0.0f;
+
+    result.entry_time = 0.0f;
+    memcpy(out, &result, sizeof(result));
     return false;
 }
 
-static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *axes, size_t n_axes, sat_test_result *result) {
+static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *axes, size_t n_axes, sat_test_result *out) {
     if (glm_vec3_norm2(delta) < GLM_FLT_EPSILON) {
-        return seperating_axis_static(a, b, axes, n_axes, result);
+        return seperating_axis_static(a, b, axes, n_axes, out);
     }
 
-    result->overlap_depth = FLT_MAX;
-    result->entry_time = FLT_MAX;
+    sat_test_result result;
+    result.overlap_depth = FLT_MAX;
+    result.entry_time = FLT_MAX;
     
     for (size_t i = 0; i < n_axes; i ++) {
         if (glm_vec3_norm2(axes[i]) < GLM_FLT_EPSILON) {
@@ -115,7 +119,7 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
         sat_min_max(b, axis, &min1, &max1);
 
         if (max0 >= min1 && max1 >= min0) {
-            if (result->entry_time > 0.0f && result->entry_time <= 1.0f) {
+            if (result.entry_time > 0.0f && result.entry_time <= 1.0f) {
                 continue;
             }
 
@@ -124,10 +128,10 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
                 fabsf(min0 - max1)
             );
 
-            if (result && result->overlap_depth > depth) {
-                result->overlap_depth = depth;
-                result->entry_time = 0.0f;
-                glm_vec3_copy(axis, result->normal);
+            if (out && result.overlap_depth > depth) {
+                result.overlap_depth = depth;
+                result.entry_time = 0.0f;
+                glm_vec3_copy(axis, result.normal);
             }
             continue;
         }
@@ -144,12 +148,13 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
             return true;
         }
 
-        if (result && entry_time < result->entry_time) {
-            result->entry_time = entry_time;
-            glm_vec3_copy(axis, result->normal);
+        if (out && entry_time < result.entry_time) {
+            result.entry_time = entry_time;
+            glm_vec3_copy(axis, result.normal);
         }
     }
 
+    memcpy(out, &result, sizeof(result));
     return false;
 }
 

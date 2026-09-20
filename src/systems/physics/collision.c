@@ -144,6 +144,7 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
 
         if (out && entry_time < result.entry_time) {
             result.entry_time = entry_time;
+            result.overlap_depth = 0.0f;
             glm_vec3_copy(axis, result.normal);
         }
     }

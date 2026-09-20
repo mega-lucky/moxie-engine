@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-bool obb_vs_obb(obb_collider *a, obb_collider *b, vec3 p0, vec3 p1);
+bool obb_vs_obb(obb_collider *a, obb_collider *b, transform *t0, transform *t1);
 
 #ifdef __cplusplus
 }

@@ -1,17 +1,21 @@
 #include "./types.h"
 #include <string.h>
+#include <transform.h>
 
-static inline void gen_obb_vertices(obb_collider *obb, vec3 p, vec3 *out) {
-    mat3 r; glm_quat_mat3(obb->r, r);
+static inline void gen_obb_vertices(obb_collider *obb, transform *t, vec3 *out) {
+    mat3 r; glm_quat_mat3(t->rotation, r);
 
     vec3 c, s;
     glm_vec3_add(obb->min, obb->max, c);
     glm_vec3_divs(c, 2.0f, c);
     glm_mat3_mulv(r, c, c);
-    glm_vec3_add(c, p, c);
-
+    glm_vec3_add(c, t->position, c);
+    
     glm_vec3_sub(obb->max, obb->min, s);
     glm_vec3_divs(s, 2.0f, s);
+    if (obb->scales_with_transform) {
+        glm_vec3_mul(s, t->scale, s);
+    }
 
     vec3 result[8] = {
         { s[0],  s[1],  s[2]}, {-s[0],  s[1],  s[2]},
@@ -28,10 +32,10 @@ static inline void gen_obb_vertices(obb_collider *obb, vec3 p, vec3 *out) {
     }
 }
 
-static inline void gen_obb_normals(obb_collider *obb, vec3 *out) {
-    glm_quat_rotatev(obb->r, GLM_XUP, out[0]);
-    glm_quat_rotatev(obb->r, GLM_YUP, out[1]);
-    glm_quat_rotatev(obb->r, GLM_ZUP, out[2]);
+static inline void gen_obb_normals(versor q, vec3 *out) {
+    glm_quat_rotatev(q, GLM_XUP, out[0]);
+    glm_quat_rotatev(q, GLM_YUP, out[1]);
+    glm_quat_rotatev(q, GLM_ZUP, out[2]);
 }
 
 static inline void bb_cross_axes(vec3 *a_normals, vec3 *b_normals, vec3 *out) {
@@ -89,15 +93,15 @@ static inline bool seperating_axis_static(shape *a, shape *b, vec3 *axes, size_t
     return false;
 }
 
-bool obb_vs_obb(obb_collider *a, obb_collider *b, vec3 p0, vec3 p1) {
+bool obb_vs_obb(obb_collider *a, obb_collider *b, transform *t0, transform *t1) {
     vec3 axes[15];
 
-    gen_obb_normals(a, axes);
-    gen_obb_normals(b, axes + 3);
+    gen_obb_normals(t0->rotation, axes);
+    gen_obb_normals(t1->rotation, axes + 3);
     bb_cross_axes(axes, axes + 3, axes + 6);
 
-    vec3 verts0[8]; gen_obb_vertices(a, p0, verts0);
-    vec3 verts1[8]; gen_obb_vertices(b, p1, verts1);
+    vec3 verts0[8]; gen_obb_vertices(a, t0, verts0);
+    vec3 verts1[8]; gen_obb_vertices(b, t1, verts1);
 
     shape s0 = {8, verts0};
     shape s1 = {8, verts1};

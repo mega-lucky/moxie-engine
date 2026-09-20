@@ -8,11 +8,13 @@
 #include <cglm/cglm.h>
 
 typedef struct aabb_collider {
+    bool scales_with_transform;
     vec3 min, max;
 } aabb_collider;
 
 typedef struct obb_collider {
-    vec3 min, max; versor r;
+    bool scales_with_transform;
+    vec3 min, max;
 } obb_collider;
 
 typedef struct custom_collider {

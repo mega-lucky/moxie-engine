@@ -56,12 +56,6 @@ static inline void sat_min_max(shape *a, vec3 axis, float *min, float *max) {
     }
 }
 
-typedef struct sat_test_result {
-    vec3 normal;
-    float overlap_depth;
-    float entry_time;
-} sat_test_result;
-
 static inline bool seperating_axis_static(shape *a, shape *b, vec3 *axes, size_t n_axes, sat_test_result *out) {
     sat_test_result result;
     result.overlap_depth = FLT_MAX;
@@ -158,7 +152,11 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
     return false;
 }
 
-bool obb_vs_obb_static(obb_collider *a, obb_collider *b, transform *t0, transform *t1) {
+bool obb_vs_obb_static(
+    obb_collider *a, obb_collider *b,
+    transform *t0, transform *t1,
+    sat_test_result *out
+) {
     vec3 axes[15];
 
     gen_obb_normals(t0->rotation, axes);
@@ -171,11 +169,15 @@ bool obb_vs_obb_static(obb_collider *a, obb_collider *b, transform *t0, transfor
     shape s0 = {8, verts0};
     shape s1 = {8, verts1};
 
-    sat_test_result result;
-    return !seperating_axis_static(&s0, &s1, axes, 15, &result);
+    return !seperating_axis_static(&s0, &s1, axes, 15, out);
 }
 
-bool obb_vs_obb_swept(obb_collider *a, obb_collider *b, transform *t0, transform *t1, vec3 delta) {
+bool obb_vs_obb_swept(
+    obb_collider *a, obb_collider *b,
+    transform *t0, transform *t1,
+    vec3 delta,
+    sat_test_result *out
+) {
     vec3 axes[15];
 
     gen_obb_normals(t0->rotation, axes);
@@ -188,6 +190,5 @@ bool obb_vs_obb_swept(obb_collider *a, obb_collider *b, transform *t0, transform
     shape s0 = {8, verts0};
     shape s1 = {8, verts1};
 
-    sat_test_result result;
-    return !seperating_axis_swept(&s0, &s1, delta, axes, 15, &result);
+    return !seperating_axis_swept(&s0, &s1, delta, axes, 15, out);
 }

@@ -7,6 +7,12 @@
 
 #include <cglm/cglm.h>
 
+typedef struct sat_test_result {
+    vec3 normal;
+    float overlap_depth;
+    float entry_time;
+} sat_test_result;
+
 typedef struct aabb_collider {
     bool scales_with_transform;
     vec3 min, max;

@@ -2,6 +2,7 @@
 #define PHYSICS_SYSTEM
 
 #include "./types.h"
+#include <transform.h>
 
 #ifdef __cplusplus
 extern "C" {

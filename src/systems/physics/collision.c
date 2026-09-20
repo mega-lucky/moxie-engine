@@ -58,11 +58,12 @@ static inline void sat_min_max(shape *a, vec3 axis, float *min, float *max) {
 
 typedef struct sat_test_result {
     vec3 normal;
-    float scale;
+    float overlap_depth;
+    float entry_time
 } sat_test_result;
 
 static inline bool seperating_axis_static(shape *a, shape *b, vec3 *axes, size_t n_axes, sat_test_result *result) {
-    result->scale = FLT_MAX;
+    result->overlap_depth = FLT_MAX;
     
     for (size_t i = 0; i < n_axes; i ++) {
         if (glm_vec3_norm2(axes[i]) < GLM_FLT_EPSILON) {
@@ -84,8 +85,66 @@ static inline bool seperating_axis_static(shape *a, shape *b, vec3 *axes, size_t
             fabsf(min0 - max1)
         );
 
-        if (result && result->scale > depth) {
-            result->scale = depth;
+        if (result && result->overlap_depth > depth) {
+            result->overlap_depth = depth;
+            glm_vec3_copy(axis, result->normal);
+        }
+    }
+
+    result->entry_time = 0.0f;
+    return false;
+}
+
+static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *axes, size_t n_axes, sat_test_result *result) {
+    if (glm_vec3_norm2(delta) < GLM_FLT_EPSILON) {
+        return seperating_axis_static(a, b, axes, n_axes, result);
+    }
+
+    result->overlap_depth = FLT_MAX;
+    result->entry_time = FLT_MAX;
+    
+    for (size_t i = 0; i < n_axes; i ++) {
+        if (glm_vec3_norm2(axes[i]) < GLM_FLT_EPSILON) {
+            continue;
+        }
+
+        float *axis = axes[i];
+        float min0, max0, min1, max1;
+
+        sat_min_max(a, axis, &min0, &max0);
+        sat_min_max(b, axis, &min1, &max1);
+
+        if (max0 >= min1 && max1 >= min0) {
+            if (result->entry_time > 0.0f) {
+                continue;
+            }
+
+            float depth = fminf(
+                fabsf(max0 - min1),
+                fabsf(min0 - max1)
+            );
+
+            if (result && result->overlap_depth > depth) {
+                result->overlap_depth = depth;
+                glm_vec3_copy(axis, result->normal);
+            }
+            continue;
+        }
+
+        float pdelta = glm_vec3_dot(axis, delta);
+
+        float entry_dist = pdelta > 0.0f ?
+            min1 - max0 :
+            max1 - min0;
+
+        float entry_time = entry_dist / pdelta;
+
+        if (entry_time < 0.0f || entry_time > 1.0f) {
+            return true;
+        }
+
+        if (result && entry_time < result->entry_time) {
+            result->entry_time = entry_time;
             glm_vec3_copy(axis, result->normal);
         }
     }

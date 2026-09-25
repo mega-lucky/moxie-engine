@@ -11,9 +11,7 @@ struct mesh_shape;
 struct material_data;
 
 struct engine_config {
-    std::string window_title;
-    int window_width, window_height;
-    bool window_max;
+    Window::window_config window_config;
 };
 
 struct AssetStore {

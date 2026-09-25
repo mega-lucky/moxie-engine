@@ -18,7 +18,7 @@ private:
     GLFWwindow *m_context;
     std::vector<ResizeCallback> m_resize_callbacks;
 public:
-    Container(int width, int height, const std::string name);
+    Container(const std::string_view &name, int width, int height, bool max);
     ~Container();
     
     bool ShouldClose() const noexcept;

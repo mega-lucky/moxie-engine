@@ -27,7 +27,7 @@ static void resize_callback(WindowContext* context, int width, int height) {
     userdata->window->Resize(width, height);
 }
 
-Window::Container::Container(int width, int height, const std::string name) :
+Window::Container::Container(const std::string_view &name, int width, int height, bool max) :
     m_width(width),
     m_height(height),
     m_name(name)
@@ -39,7 +39,7 @@ Window::Container::Container(int width, int height, const std::string name) :
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-    glfwWindowHint(GLFW_MAXIMIZED, GLFW_FALSE);
+    glfwWindowHint(GLFW_MAXIMIZED, max);
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     glfw_ref_count ++;
     

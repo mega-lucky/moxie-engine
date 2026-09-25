@@ -28,8 +28,6 @@ static void resize_callback(WindowContext* context, int width, int height) {
 }
 
 Window::Container::Container(const window_config &config) :
-    m_width(config.width),
-    m_height(config.height),
     m_name(config.title)
 {
     glfwInit();
@@ -43,7 +41,7 @@ Window::Container::Container(const window_config &config) :
     glfwWindowHint(GLFW_VISIBLE, config.visible);
     glfw_ref_count ++;
     
-    m_context = glfwCreateWindow(m_width, m_height, m_name.c_str(), NULL, NULL);
+    m_context = glfwCreateWindow(config.width, config.height, m_name.c_str(), NULL, NULL);
     if (m_context == nullptr) {
         throw std::runtime_error("Failed to initialise GLFW context.");
     }
@@ -51,6 +49,7 @@ Window::Container::Container(const window_config &config) :
     glfwMakeContextCurrent(m_context);
     glfwSetFramebufferSizeCallback(m_context, (GLFWframebuffersizefun)resize_callback);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    glfwGetWindowSize(m_context, &m_width, &m_height);
 
     auto *userdata = new GlfwUserdata;
     userdata->window = this;

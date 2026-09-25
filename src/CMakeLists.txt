@@ -16,7 +16,13 @@ add_subdirectory(systems)
 add_subdirectory(utils)
 
 add_executable(moxie-engine main.cpp)
-target_link_libraries(moxie-engine PRIVATE
+target_sources(moxie-engine PUBLIC
+    FILE_SET setup_header
+    TYPE HEADERS
+    BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+    FILES ${CMAKE_CURRENT_SOURCE_DIR}/setup.h
+)
+target_link_libraries(moxie-engine PUBLIC
     core
     bindings
     systems

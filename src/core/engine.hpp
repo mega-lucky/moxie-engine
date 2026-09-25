@@ -10,6 +10,12 @@
 struct mesh_shape;
 struct material_data;
 
+struct engine_config {
+    std::string window_title;
+    int window_width, window_height;
+    bool window_max;
+};
+
 struct AssetStore {
     std::unordered_map<std::string, mesh_shape*> meshes;
     std::unordered_map<std::string, material_data*> materials;
@@ -24,7 +30,7 @@ public:
     Time Timer;
     AssetStore Assets;
 
-    Engine();
+    Engine(const engine_config &config);
     void Update();
     ~Engine();
 };

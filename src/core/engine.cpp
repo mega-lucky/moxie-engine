@@ -1,7 +1,7 @@
 #include "./engine.hpp"
 
-Engine::Engine() :
-MainWindow(800, 600, "New Window"),
+Engine::Engine(const engine_config &config) :
+MainWindow(config.window_title, config.window_width, config.window_height, config.window_max),
 ScriptSchuduler(*this),
 InputManager(MainWindow.GetContext())
 {}

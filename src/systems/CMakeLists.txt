@@ -1,6 +1,5 @@
 add_library(systems INTERFACE)
 add_library(render_system STATIC)
-target_link_libraries(systems INTERFACE render_system)
 target_sources(render_system
     PRIVATE
         render/mesh.cpp
@@ -19,4 +18,20 @@ target_sources(render_system
             render/shader.h
             render/text.h
 )
-target_link_libraries(render_system PUBLIC cglm glad PRIVATE freetype core compiler_flags)
+
+add_library(physics_system STATIC)
+target_sources(physics_system
+    PRIVATE
+        physics/collision.c
+    PUBLIC
+        FILE_SET physics_system_headers
+        TYPE HEADERS
+        BASE_DIRS physics
+        FILES
+            physics/physics_system.h
+)
+
+target_link_libraries(render_system PUBLIC cglm glad PRIVATE freetype engine transform compiler_flags)
+target_link_libraries(physics_system PUBLIC cglm PRIVATE transform compiler_flags)
+
+target_link_libraries(systems INTERFACE render_system physics_system)

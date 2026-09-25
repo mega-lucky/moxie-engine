@@ -108,6 +108,8 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
     result.overlap_depth = FLT_MAX;
     result.entry_time = -FLT_MAX;
     float best_axis_sqlen = 1.0f;
+    float max_entry_time = 0.0f;
+    float min_exit_time = 1.0f;
     
     for (size_t i = 0; i < n_axes; i ++) {
         float axis_sqlen = glm_vec3_norm2(axes[i]);
@@ -116,10 +118,29 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
         }
 
         float *axis = axes[i];
+        float pdelta = glm_vec3_dot(axis, delta);
         float min0, max0, min1, max1;
 
         sat_min_max(a, axis, &min0, &max0);
         sat_min_max(b, axis, &min1, &max1);
+
+        float entry_dist = pdelta > 0.0f ?
+            min1 - max0 :
+            max1 - min0;
+
+        float exit_dist = pdelta > 0.0f ?
+            max1 - min0 :
+            min1 - max0;
+        
+        float entry_time = fabsf(pdelta) > GLM_FLT_EPSILON ?
+            entry_dist / pdelta :
+            -FLT_MAX;
+        float exit_time = fabsf(pdelta) > GLM_FLT_EPSILON ?
+            exit_dist / pdelta :
+            FLT_MAX;
+
+        max_entry_time = fmaxf(entry_time, max_entry_time);
+        min_exit_time = fminf(exit_time, min_exit_time);
 
         if (max0 >= min1 && max1 >= min0) {
             if (result.entry_time > 0.0f && result.entry_time <= 1.0f) {
@@ -139,15 +160,7 @@ static inline bool seperating_axis_swept(shape *a, shape *b, vec3 delta, vec3 *a
             continue;
         }
 
-        float pdelta = glm_vec3_dot(axis, delta);
-
-        float entry_dist = pdelta > 0.0f ?
-            min1 - max0 :
-            max1 - min0;
-
-        float entry_time = entry_dist / pdelta;
-
-        if (entry_time < 0.0f || entry_time > 1.0f) {
+        if (max_entry_time > min_exit_time  || entry_time < 0.0f || entry_time > 1.0f) {
             return true;
         }
 

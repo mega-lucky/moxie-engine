@@ -7,9 +7,6 @@
 
 using WindowContext = GLFWwindow;
 
-#define DEFAULT_WIDTH 800
-#define DEFAULT_HEIGHT 600
-
 static int glfw_ref_count = 0;
 
 static void err_callback(int code, const char *desc) {

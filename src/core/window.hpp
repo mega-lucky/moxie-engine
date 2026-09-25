@@ -8,6 +8,14 @@
 struct GLFWwindow;
 
 namespace Window {
+    
+struct window_config {
+    const char *title;
+    int width, height;
+    bool max;
+    bool resizable;
+    bool visible;
+};
 
 using ResizeCallback = std::function<void(int, int)>;
 
@@ -18,7 +26,7 @@ private:
     GLFWwindow *m_context;
     std::vector<ResizeCallback> m_resize_callbacks;
 public:
-    Container(const std::string_view &name, int width, int height, bool max);
+    Container(const window_config &config);
     ~Container();
     
     bool ShouldClose() const noexcept;

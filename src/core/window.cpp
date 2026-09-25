@@ -27,10 +27,10 @@ static void resize_callback(WindowContext* context, int width, int height) {
     userdata->window->Resize(width, height);
 }
 
-Window::Container::Container(const std::string_view &name, int width, int height, bool max) :
-    m_width(width),
-    m_height(height),
-    m_name(name)
+Window::Container::Container(const window_config &config) :
+    m_width(config.width),
+    m_height(config.height),
+    m_name(config.title)
 {
     glfwInit();
     glfwSetErrorCallback(err_callback);
@@ -38,9 +38,9 @@ Window::Container::Container(const std::string_view &name, int width, int height
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-    glfwWindowHint(GLFW_MAXIMIZED, max);
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, config.resizable);
+    glfwWindowHint(GLFW_MAXIMIZED, config.max);
+    glfwWindowHint(GLFW_VISIBLE, config.visible);
     glfw_ref_count ++;
     
     m_context = glfwCreateWindow(m_width, m_height, m_name.c_str(), NULL, NULL);
